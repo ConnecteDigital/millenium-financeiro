@@ -1,24 +1,36 @@
 'use client'
 
-import { useState } from 'react'
-import { Users, Plus, Trash2, Save, Settings } from 'lucide-react'
-
-const mockTeams = [
-  { id: '1', name: 'Equipe A' },
-  { id: '2', name: 'Equipe B' },
-]
+import { useState, useEffect } from 'react'
+import { Users, Plus, Trash2, Save, Settings, Loader2 } from 'lucide-react'
+import { getTeams, createTeam, deleteTeam } from '@/lib/db/teams'
 
 export default function ConfiguracoesPage() {
-  const [teams, setTeams] = useState(mockTeams)
+  const [teams, setTeams] = useState<any[]>([])
   const [newTeam, setNewTeam] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
 
-  const addTeam = () => {
+  useEffect(() => {
+    getTeams().then(setTeams).finally(() => setLoading(false))
+  }, [])
+
+  async function handleAddTeam() {
     if (!newTeam.trim()) return
-    setTeams([...teams, { id: Date.now().toString(), name: newTeam.trim() }])
-    setNewTeam('')
+    setSaving(true)
+    try {
+      const team = await createTeam(newTeam.trim())
+      setTeams(t => [...t, team])
+      setNewTeam('')
+    } finally {
+      setSaving(false)
+    }
   }
 
-  const removeTeam = (id: string) => setTeams(teams.filter(t => t.id !== id))
+  async function handleDeleteTeam(id: string) {
+    if (!confirm('Remover esta equipe?')) return
+    await deleteTeam(id)
+    setTeams(t => t.filter(x => x.id !== id))
+  }
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
@@ -34,36 +46,43 @@ export default function ConfiguracoesPage() {
           <h2 className="font-semibold text-slate-800">Equipes</h2>
         </div>
 
-        <div className="space-y-2">
-          {teams.map(t => (
-            <div key={t.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-              <span className="text-sm font-medium text-slate-700">{t.name}</span>
-              <button onClick={() => removeTeam(t.id)}
-                className="text-red-400 hover:text-red-600 transition">
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {teams.length === 0 && (
+              <p className="text-slate-400 text-sm text-center py-4">Nenhuma equipe cadastrada</p>
+            )}
+            {teams.map(t => (
+              <div key={t.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                <span className="text-sm font-medium text-slate-700">{t.name}</span>
+                <button onClick={() => handleDeleteTeam(t.id)} className="text-red-400 hover:text-red-600 transition">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="flex gap-2">
           <input
-            type="text"
-            value={newTeam}
+            type="text" value={newTeam}
             onChange={e => setNewTeam(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && addTeam()}
+            onKeyDown={e => e.key === 'Enter' && handleAddTeam()}
             placeholder="Nome da nova equipe..."
             className="flex-1 px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <button onClick={addTeam}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition">
-            <Plus className="w-4 h-4" />
+          <button onClick={handleAddTeam} disabled={saving || !newTeam.trim()}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
             Adicionar
           </button>
         </div>
       </div>
 
-      {/* Perfil */}
+      {/* Dados da empresa */}
       <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-4">
         <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
           <Settings className="w-5 h-5 text-blue-600" />
