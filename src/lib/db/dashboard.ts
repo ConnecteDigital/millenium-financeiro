@@ -62,9 +62,10 @@ export async function getNotifications() {
   const [scheduledRes, pendingPaymentsRes, pendingExpensesRes] = await Promise.all([
     supabase
       .from('calls')
-      .select('id, notes, client:clients(name)')
+      .select('id, notes, contact_name, scheduled_time, call_address, service_category, client:clients(name)')
       .eq('status', 'agendado')
-      .eq('date', today),
+      .eq('date', today)
+      .order('scheduled_time', { ascending: true }),
     supabase
       .from('service_orders')
       .select('id, total_value, remaining_amount, remaining_due_date, client:clients(name), payment_status')

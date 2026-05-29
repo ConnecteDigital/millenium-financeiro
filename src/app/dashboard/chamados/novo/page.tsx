@@ -12,13 +12,12 @@ import { getTeams } from '@/lib/db/teams'
 type ServiceType = 'proprio' | 'terceirizado_saida' | 'terceirizado_entrada'
 type PaymentStatus = 'pago' | 'pago_parcial' | 'pendente'
 type BillingSystem = 'metro_linear' | 'metro_cubico' | 'litros' | 'carga' | 'valor_fechado' | 'metro_quadrado'
+interface Item { id: string; quantity: number; description: string; unit_price: number }
 
-interface Item {
-  id: string
-  quantity: number
-  description: string
-  unit_price: number
-}
+const SERVICE_CATEGORIES = [
+  'Desentupimento', 'Limpa Fossa', 'Limpeza Caixa D\'água',
+  'Limpeza de Esgoto', 'Limpeza de Gordura', 'Instalação Hidráulica', 'Outros'
+]
 
 export default function NovoChamadoPage() {
   const router = useRouter()
@@ -27,15 +26,22 @@ export default function NovoChamadoPage() {
   const [clients, setClients] = useState<any[]>([])
   const [teams, setTeams] = useState<any[]>([])
 
-  // Chamado
+  // Chamado básico
   const [callDate, setCallDate] = useState(new Date().toISOString().split('T')[0])
   const [origin, setOrigin] = useState('site_millenium')
   const [callStatus, setCallStatus] = useState('agendado')
   const [callNotes, setCallNotes] = useState('')
   const [clientId, setClientId] = useState('')
+  const [contactName, setContactName] = useState('')
+  const [serviceCategory, setServiceCategory] = useState('')
+  // Campos de agendamento
+  const [scheduledTime, setScheduledTime] = useState('')
+  const [callAddress, setCallAddress] = useState('')
 
-  // OS (só quando aprovado)
-  const [isApproved, setIsApproved] = useState(false)
+  const isApproved = callStatus === 'aprovado'
+  const isScheduled = callStatus === 'agendado'
+
+  // OS
   const [serviceType, setServiceType] = useState<ServiceType>('proprio')
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('pendente')
   const [billingSystem, setBillingSystem] = useState<BillingSystem | ''>('')
@@ -58,21 +64,10 @@ export default function NovoChamadoPage() {
   const [remainingDueDate, setRemainingDueDate] = useState('')
   const [conditions, setConditions] = useState('')
   const [observations, setObservations] = useState('')
-  // Custos terceirizado
   const [fuelCost, setFuelCost] = useState(0)
   const [mealCost, setMealCost] = useState(0)
   const [truckCost, setTruckCost] = useState(0)
   const [otherCost, setOtherCost] = useState(0)
-
-  // Dados cliente manual (se não selecionar cadastrado)
-  const [clientName, setClientName] = useState('')
-  const [clientPhone, setClientPhone] = useState('')
-  const [clientAddress, setClientAddress] = useState('')
-  const [clientNeighborhood, setClientNeighborhood] = useState('')
-  const [clientCity, setClientCity] = useState('')
-  const [clientState, setClientState] = useState('')
-  const [clientCep, setClientCep] = useState('')
-  const [clientCpfCnpj, setClientCpfCnpj] = useState('')
 
   useEffect(() => {
     Promise.all([getClients(), getTeams()])
@@ -88,27 +83,27 @@ export default function NovoChamadoPage() {
   const updateItem = (id: string, field: keyof Item, value: string | number) =>
     setItems(prev => prev.map(i => i.id === id ? { ...i, [field]: value } : i))
 
-  function handleStatusChange(status: string) {
-    setCallStatus(status)
-    setIsApproved(status === 'aprovado')
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!contactName.trim() && !clientId) {
+      setError('Informe o nome do contato ou selecione um cliente cadastrado.')
+      return
+    }
     setSaving(true)
     setError('')
-
     try {
-      // 1. Criar o chamado
       const call = await createCall({
         date: callDate,
         client_id: clientId || null,
+        contact_name: contactName || null,
         origin,
         status: callStatus,
         notes: callNotes || null,
+        service_category: serviceCategory || null,
+        scheduled_time: scheduledTime || null,
+        call_address: callAddress || null,
       })
 
-      // 2. Se aprovado, criar a OS
       if (isApproved) {
         const orderData = {
           call_id: call.id,
@@ -142,18 +137,14 @@ export default function NovoChamadoPage() {
           conditions: conditions || null,
           observations: observations || null,
         }
-
-        const orderItems = items
-          .filter(i => i.description.trim())
-          .map(i => ({ quantity: i.quantity, description: i.description, unit_price: i.unit_price }))
-
-        await createServiceOrder(orderData, orderItems)
+        const validItems = items.filter(i => i.description.trim()).map(i => ({ quantity: i.quantity, description: i.description, unit_price: i.unit_price }))
+        await createServiceOrder(orderData, validItems)
       }
 
       router.push('/dashboard/chamados')
     } catch (err: any) {
       console.error(err)
-      setError('Erro ao salvar chamado. Verifique os dados e tente novamente.')
+      setError('Erro ao salvar chamado. Tente novamente.')
     } finally {
       setSaving(false)
     }
@@ -161,7 +152,6 @@ export default function NovoChamadoPage() {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
       <div className="flex items-center gap-3">
         <Link href="/dashboard/chamados" className="p-2 hover:bg-slate-100 rounded-lg transition text-slate-500">
           <ArrowLeft className="w-5 h-5" />
@@ -172,7 +162,7 @@ export default function NovoChamadoPage() {
         </div>
       </div>
 
-      {/* Dados do chamado */}
+      {/* Informações básicas */}
       <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-4">
         <h2 className="font-semibold text-slate-800 text-base border-b border-slate-100 pb-3">Informações do Chamado</h2>
 
@@ -194,32 +184,85 @@ export default function NovoChamadoPage() {
           </div>
         </div>
 
+        {/* Status */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">Status *</label>
           <div className="flex flex-wrap gap-2">
             {[
-              { value: 'agendado', label: 'Agendado' },
-              { value: 'aprovado', label: 'Aprovado' },
-              { value: 'nao_quis_visita', label: 'Não quis visita' },
-              { value: 'cancelado', label: 'Cancelado' },
+              { value: 'agendado', label: '📅 Agendado' },
+              { value: 'aprovado', label: '✅ Aprovado' },
+              { value: 'nao_quis_visita', label: '🚫 Não quis visita' },
+              { value: 'cancelado', label: '❌ Cancelado' },
             ].map(s => (
-              <button key={s.value} type="button" onClick={() => handleStatusChange(s.value)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${callStatus === s.value ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+              <button key={s.value} type="button" onClick={() => setCallStatus(s.value)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${callStatus === s.value ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
                 {s.label}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Cliente */}
+        {/* Tipo de serviço */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1.5">Cliente cadastrado</label>
-          <select value={clientId} onChange={e => setClientId(e.target.value)}
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">Tipo de Serviço</label>
+          <select value={serviceCategory} onChange={e => setServiceCategory(e.target.value)}
             className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option value="">— Selecionar cliente cadastrado (opcional) —</option>
-            {clients.map(c => <option key={c.id} value={c.id}>{c.name} {c.city ? `- ${c.city}` : ''}</option>)}
+            <option value="">— Selecionar tipo —</option>
+            {SERVICE_CATEGORIES.map(c => <option key={c}>{c}</option>)}
           </select>
         </div>
+
+        {/* Nome do contato */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            Nome do Contato *
+            <span className="text-slate-400 font-normal ml-1">(quem ligou)</span>
+          </label>
+          <input type="text" value={contactName} onChange={e => setContactName(e.target.value)}
+            placeholder="Ex: João Silva"
+            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+
+        {/* Cliente cadastrado */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            Cliente cadastrado
+            <span className="text-slate-400 font-normal ml-1">(opcional — vincule se já existe no sistema)</span>
+          </label>
+          <select value={clientId} onChange={e => setClientId(e.target.value)}
+            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">— Não vincular —</option>
+            {clients.map(c => <option key={c.id} value={c.id}>{c.name}{c.city ? ` - ${c.city}` : ''}</option>)}
+          </select>
+        </div>
+
+        {/* Campos de agendamento */}
+        {isScheduled && (
+          <div className="border border-blue-100 bg-blue-50/50 rounded-lg p-4 space-y-3">
+            <p className="text-sm font-semibold text-blue-700">📅 Detalhes do Agendamento</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Horário Agendado</label>
+                <input type="time" value={scheduledTime} onChange={e => setScheduledTime(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Tipo de Serviço</label>
+                <select value={serviceCategory} onChange={e => setServiceCategory(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                  <option value="">— Selecionar —</option>
+                  {SERVICE_CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                </select>
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Endereço do Serviço</label>
+                <input type="text" value={callAddress} onChange={e => setCallAddress(e.target.value)}
+                  placeholder="Rua, número, bairro, cidade"
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+              </div>
+            </div>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1.5">Observações</label>
@@ -229,57 +272,11 @@ export default function NovoChamadoPage() {
         </div>
       </div>
 
-      {/* OS - só aparece quando aprovado */}
+      {/* OS — só quando aprovado */}
       {isApproved && (
         <>
-          {/* Dados do cliente / OS */}
           <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-4">
-            <h2 className="font-semibold text-slate-800 text-base border-b border-slate-100 pb-3">Dados do Cliente / OS</h2>
-            {!clientId && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Nome</label>
-                  <input type="text" value={clientName} onChange={e => setClientName(e.target.value)}
-                    className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">CPF / CNPJ</label>
-                  <input type="text" value={clientCpfCnpj} onChange={e => setClientCpfCnpj(e.target.value)}
-                    className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Telefone</label>
-                  <input type="text" value={clientPhone} onChange={e => setClientPhone(e.target.value)}
-                    className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Endereço</label>
-                  <input type="text" value={clientAddress} onChange={e => setClientAddress(e.target.value)}
-                    className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Bairro</label>
-                  <input type="text" value={clientNeighborhood} onChange={e => setClientNeighborhood(e.target.value)}
-                    className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">CEP</label>
-                  <input type="text" value={clientCep} onChange={e => setClientCep(e.target.value)}
-                    className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Cidade</label>
-                  <input type="text" value={clientCity} onChange={e => setClientCity(e.target.value)}
-                    className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Estado</label>
-                  <input type="text" maxLength={2} value={clientState} onChange={e => setClientState(e.target.value.toUpperCase())}
-                    className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-              </div>
-            )}
-
+            <h2 className="font-semibold text-slate-800 text-base border-b border-slate-100 pb-3">Ordem de Serviço</h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Equipe</label>
@@ -305,7 +302,7 @@ export default function NovoChamadoPage() {
                   className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Data de Vencimento</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Vencimento</label>
                 <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)}
                   className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
@@ -317,13 +314,13 @@ export default function NovoChamadoPage() {
             </div>
           </div>
 
-          {/* Tipo de execução */}
+          {/* Tipo execução */}
           <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-4">
             <h2 className="font-semibold text-slate-800 text-base border-b border-slate-100 pb-3">Tipo de Execução</h2>
             <div className="flex flex-wrap gap-2">
               {[
                 { value: 'proprio', label: '✅ Serviço Próprio' },
-                { value: 'terceirizado_saida', label: '↗️ Terceirizado (passamos para parceiro)' },
+                { value: 'terceirizado_saida', label: '↗️ Terceirizado (passamos)' },
                 { value: 'terceirizado_entrada', label: '↙️ Recebido de parceiro' },
               ].map(s => (
                 <button key={s.value} type="button" onClick={() => setServiceType(s.value as ServiceType)}
@@ -332,9 +329,8 @@ export default function NovoChamadoPage() {
                 </button>
               ))}
             </div>
-
-            {(serviceType !== 'proprio') && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
+            {serviceType !== 'proprio' && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {[
                   { label: 'Gasolina (R$)', val: fuelCost, set: setFuelCost },
                   { label: 'Almoço (R$)', val: mealCost, set: setMealCost },
@@ -343,8 +339,7 @@ export default function NovoChamadoPage() {
                 ].map(f => (
                   <div key={f.label}>
                     <label className="block text-sm font-medium text-slate-700 mb-1.5">{f.label}</label>
-                    <input type="number" min="0" step="0.01" value={f.val}
-                      onChange={e => f.set(Number(e.target.value))}
+                    <input type="number" min="0" step="0.01" value={f.val} onChange={e => f.set(Number(e.target.value))}
                       className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   </div>
                 ))}
@@ -357,46 +352,34 @@ export default function NovoChamadoPage() {
             <h2 className="font-semibold text-slate-800 text-base border-b border-slate-100 pb-3">Itens do Serviço</h2>
             <div className="space-y-2">
               <div className="grid grid-cols-12 gap-2 text-xs font-semibold text-slate-500 uppercase px-1">
-                <div className="col-span-2">Qtd.</div>
-                <div className="col-span-6">Descrição</div>
-                <div className="col-span-2">Vlr. Unit.</div>
-                <div className="col-span-1">Total</div>
-                <div className="col-span-1"></div>
+                <div className="col-span-2">Qtd.</div><div className="col-span-6">Descrição</div>
+                <div className="col-span-2">Vlr. Unit.</div><div className="col-span-1">Total</div><div className="col-span-1"></div>
               </div>
               {items.map(item => (
                 <div key={item.id} className="grid grid-cols-12 gap-2 items-center">
                   <div className="col-span-2">
-                    <input type="number" min="1" value={item.quantity}
-                      onChange={e => updateItem(item.id, 'quantity', Number(e.target.value))}
+                    <input type="number" min="1" value={item.quantity} onChange={e => updateItem(item.id, 'quantity', Number(e.target.value))}
                       className="w-full px-2 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   </div>
                   <div className="col-span-6">
-                    <input type="text" value={item.description} placeholder="Descrição"
-                      onChange={e => updateItem(item.id, 'description', e.target.value)}
+                    <input type="text" value={item.description} placeholder="Descrição" onChange={e => updateItem(item.id, 'description', e.target.value)}
                       className="w-full px-2 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   </div>
                   <div className="col-span-2">
-                    <input type="number" min="0" step="0.01" value={item.unit_price}
-                      onChange={e => updateItem(item.id, 'unit_price', Number(e.target.value))}
+                    <input type="number" min="0" step="0.01" value={item.unit_price} onChange={e => updateItem(item.id, 'unit_price', Number(e.target.value))}
                       className="w-full px-2 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   </div>
-                  <div className="col-span-1 text-sm text-slate-700 font-medium text-center">
-                    {(item.quantity * item.unit_price).toFixed(2)}
-                  </div>
+                  <div className="col-span-1 text-sm text-slate-700 font-medium text-center">{(item.quantity * item.unit_price).toFixed(2)}</div>
                   <div className="col-span-1 flex justify-center">
-                    <button type="button" onClick={() => removeItem(item.id)} className="text-red-400 hover:text-red-600 transition">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <button type="button" onClick={() => removeItem(item.id)} className="text-red-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </div>
               ))}
-              <button type="button" onClick={addItem} className="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 transition">
-                <Plus className="w-4 h-4" />
-                Adicionar item
+              <button type="button" onClick={addItem} className="flex items-center gap-1.5 text-blue-600 text-sm font-medium mt-2">
+                <Plus className="w-4 h-4" /> Adicionar item
               </button>
             </div>
 
-            {/* Locação equipamentos */}
             <div className="border-t border-slate-100 pt-4 grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Locação Equip. e M.O. (%)</label>
@@ -410,7 +393,6 @@ export default function NovoChamadoPage() {
               </div>
             </div>
 
-            {/* Totais */}
             <div className="border-t border-slate-100 pt-4 space-y-2">
               <div className="flex justify-between text-sm"><span className="text-slate-600">Subtotal</span><span>R$ {subtotal.toFixed(2)}</span></div>
               <div className="flex justify-between text-sm items-center">
@@ -430,56 +412,45 @@ export default function NovoChamadoPage() {
             </div>
           </div>
 
-          {/* Sistema de cobrança + Levantamento */}
+          {/* Levantamento */}
           <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-4">
-            <h2 className="font-semibold text-slate-800 text-base border-b border-slate-100 pb-3">Sistema de Cobrança e Levantamento</h2>
-            <div>
-              <p className="text-sm font-medium text-slate-700 mb-2">Sistema de Cobrança</p>
-              <div className="flex flex-wrap gap-2">
-                {(['metro_linear', 'metro_cubico', 'litros', 'carga', 'valor_fechado', 'metro_quadrado'] as BillingSystem[]).map(b => {
-                  const labels: Record<string, string> = {
-                    metro_linear: 'Metro Linear', metro_cubico: 'Metro Cúbico',
-                    litros: 'Litros', carga: 'Carga', valor_fechado: 'Valor Fechado', metro_quadrado: 'Metro Quadrado',
-                  }
-                  return (
-                    <button key={b} type="button" onClick={() => setBillingSystem(billingSystem === b ? '' : b)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${billingSystem === b ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-200 text-slate-600 hover:border-blue-300'}`}>
-                      {labels[b]}
-                    </button>
-                  )
-                })}
-              </div>
+            <h2 className="font-semibold text-slate-800 text-base border-b border-slate-100 pb-3">Levantamento e Cobrança</h2>
+            <div className="flex flex-wrap gap-2">
+              {(['metro_linear','metro_cubico','litros','carga','valor_fechado','metro_quadrado'] as BillingSystem[]).map(b => {
+                const labels: Record<string,string> = { metro_linear:'Metro Linear', metro_cubico:'Metro Cúbico', litros:'Litros', carga:'Carga', valor_fechado:'Valor Fechado', metro_quadrado:'Metro Quadrado' }
+                return (
+                  <button key={b} type="button" onClick={() => setBillingSystem(billingSystem === b ? '' : b)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${billingSystem === b ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-200 text-slate-600 hover:border-blue-300'}`}>
+                    {labels[b]}
+                  </button>
+                )
+              })}
             </div>
-            <div>
-              <p className="text-sm font-medium text-slate-700 mb-2">Levantamento</p>
-              <div className="flex flex-wrap gap-4">
-                {[
-                  { label: 'Com planta baixa', val: hasFloorPlan, set: setHasFloorPlan },
-                  { label: 'Com planta hidráulica', val: hasHydraulicPlan, set: setHasHydraulicPlan },
-                  { label: 'Com garantia de 30 dias', val: hasGuarantee, set: setHasGuarantee },
-                ].map(({ label, val, set }) => (
-                  <label key={label} className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={val} onChange={e => set(e.target.checked)}
-                      className="w-4 h-4 rounded text-blue-600" />
-                    <span className="text-sm text-slate-700">{label}</span>
-                  </label>
-                ))}
-              </div>
+            <div className="flex flex-wrap gap-4">
+              {[
+                { label: 'Com planta baixa', val: hasFloorPlan, set: setHasFloorPlan },
+                { label: 'Com planta hidráulica', val: hasHydraulicPlan, set: setHasHydraulicPlan },
+                { label: 'Com garantia de 30 dias', val: hasGuarantee, set: setHasGuarantee },
+              ].map(({ label, val, set }) => (
+                <label key={label} className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={val} onChange={e => set(e.target.checked)} className="w-4 h-4 rounded text-blue-600" />
+                  <span className="text-sm text-slate-700">{label}</span>
+                </label>
+              ))}
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Condições de Pagamento</label>
               <input type="text" value={conditions} onChange={e => setConditions(e.target.value)}
-                placeholder="Ex: 50% na entrada, 50% na conclusão"
                 className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Observações</label>
-              <textarea rows={3} value={observations} onChange={e => setObservations(e.target.value)}
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Observações da OS</label>
+              <textarea rows={2} value={observations} onChange={e => setObservations(e.target.value)}
                 className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
             </div>
           </div>
 
-          {/* Status de pagamento */}
+          {/* Pagamento */}
           <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-4">
             <h2 className="font-semibold text-slate-800 text-base border-b border-slate-100 pb-3">Status de Pagamento</h2>
             <div className="flex gap-2 flex-wrap">
@@ -517,12 +488,8 @@ export default function NovoChamadoPage() {
         </>
       )}
 
-      {/* Error */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">{error}</div>
-      )}
+      {error && <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">{error}</div>}
 
-      {/* Actions */}
       <div className="flex gap-3 justify-end pb-6">
         <Link href="/dashboard/chamados"
           className="px-6 py-2.5 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition">
