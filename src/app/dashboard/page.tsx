@@ -5,9 +5,9 @@ import {
   PhoneCall, CheckCircle, DollarSign, TrendingUp,
   TrendingDown, AlertCircle, Calendar, Clock, ChevronLeft, ChevronRight
 } from 'lucide-react'
-import { format, startOfWeek, endOfWeek, addWeeks, subWeeks } from 'date-fns'
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, subDays, addWeeks, subWeeks } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { getDashboardStats, getNotifications } from '@/lib/db/dashboard'
+import { getDashboardStatsRange, getNotifications } from '@/lib/db/dashboard'
 
 interface Stats {
   total_calls: number
@@ -40,21 +40,60 @@ function StatCard({ icon: Icon, label, value, color, sub }: {
   )
 }
 
+type DateMode = 'dia' | 'semana' | 'mes' | 'livre'
+
 export default function DashboardPage() {
-  const [currentWeek, setCurrentWeek] = useState(new Date())
+  const today = new Date()
+  const [mode, setMode] = useState<DateMode>('semana')
+  const [refDate, setRefDate] = useState(today)
+  const [customStart, setCustomStart] = useState(format(today, 'yyyy-MM-dd'))
+  const [customEnd, setCustomEnd] = useState(format(today, 'yyyy-MM-dd'))
   const [stats, setStats] = useState<Stats | null>(null)
   const [notifications, setNotifications] = useState<Notifications | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 })
-  const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 1 })
-  const weekLabel = `${format(weekStart, "d 'de' MMM", { locale: ptBR })} – ${format(weekEnd, "d 'de' MMM", { locale: ptBR })}`
+  // Calcular start/end com base no modo
+  const { start, end, label } = (() => {
+    if (mode === 'dia') {
+      const d = format(refDate, 'yyyy-MM-dd')
+      return { start: d, end: d, label: format(refDate, "d 'de' MMMM 'de' yyyy", { locale: ptBR }) }
+    }
+    if (mode === 'semana') {
+      const s = startOfWeek(refDate, { weekStartsOn: 1 })
+      const e = endOfWeek(refDate, { weekStartsOn: 1 })
+      return {
+        start: format(s, 'yyyy-MM-dd'), end: format(e, 'yyyy-MM-dd'),
+        label: `${format(s, "d 'de' MMM", { locale: ptBR })} – ${format(e, "d 'de' MMM", { locale: ptBR })}`
+      }
+    }
+    if (mode === 'mes') {
+      const s = startOfMonth(refDate)
+      const e = endOfMonth(refDate)
+      return {
+        start: format(s, 'yyyy-MM-dd'), end: format(e, 'yyyy-MM-dd'),
+        label: format(refDate, "MMMM 'de' yyyy", { locale: ptBR })
+      }
+    }
+    // livre
+    return { start: customStart, end: customEnd, label: `${new Date(customStart + 'T12:00:00').toLocaleDateString('pt-BR')} – ${new Date(customEnd + 'T12:00:00').toLocaleDateString('pt-BR')}` }
+  })()
+
+  function prev() {
+    if (mode === 'dia') setRefDate(d => subDays(d, 1))
+    else if (mode === 'semana') setRefDate(d => subWeeks(d, 1))
+    else if (mode === 'mes') setRefDate(d => new Date(d.getFullYear(), d.getMonth() - 1, 1))
+  }
+  function next() {
+    if (mode === 'dia') setRefDate(d => addDays(d, 1))
+    else if (mode === 'semana') setRefDate(d => addWeeks(d, 1))
+    else if (mode === 'mes') setRefDate(d => new Date(d.getFullYear(), d.getMonth() + 1, 1))
+  }
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
       const [s, n] = await Promise.all([
-        getDashboardStats(currentWeek),
+        getDashboardStatsRange(start, end),
         getNotifications(),
       ])
       setStats(s)
@@ -64,7 +103,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false)
     }
-  }, [currentWeek])
+  }, [start, end])
 
   useEffect(() => { load() }, [load])
 
@@ -73,23 +112,56 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
-          <p className="text-slate-500 text-sm mt-0.5">Visão geral do financeiro e operacional</p>
-        </div>
-        <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2 shadow-sm">
-          <button onClick={() => setCurrentWeek(subWeeks(currentWeek, 1))} className="text-slate-400 hover:text-slate-700 transition">
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <div className="flex items-center gap-1.5 px-2">
-            <Calendar className="w-3.5 h-3.5 text-blue-600" />
-            <span className="text-sm font-medium text-slate-700">{weekLabel}</span>
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
+            <p className="text-slate-500 text-sm mt-0.5">Visão geral do financeiro e operacional</p>
           </div>
-          <button onClick={() => setCurrentWeek(addWeeks(currentWeek, 1))} className="text-slate-400 hover:text-slate-700 transition">
-            <ChevronRight className="w-4 h-4" />
-          </button>
+          {/* Modo */}
+          <div className="flex gap-1 bg-slate-100 rounded-lg p-1">
+            {(['dia','semana','mes','livre'] as DateMode[]).map(m => (
+              <button key={m} onClick={() => setMode(m)}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold capitalize transition ${mode === m ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+                {m === 'dia' ? 'Dia' : m === 'semana' ? 'Semana' : m === 'mes' ? 'Mês' : 'Livre'}
+              </button>
+            ))}
+          </div>
         </div>
+
+        {/* Navegação de datas */}
+        {mode !== 'livre' ? (
+          <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2 shadow-sm w-fit">
+            <button onClick={prev} className="text-slate-400 hover:text-slate-700 transition p-1">
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <div className="flex items-center gap-1.5 px-2">
+              <Calendar className="w-3.5 h-3.5 text-blue-600" />
+              <span className="text-sm font-medium text-slate-700 capitalize">{label}</span>
+            </div>
+            <button onClick={next} className="text-slate-400 hover:text-slate-700 transition p-1">
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <button onClick={() => setRefDate(today)}
+              className="ml-1 text-xs text-blue-600 hover:text-blue-700 font-medium border border-blue-200 px-2 py-1 rounded">
+              Hoje
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2 shadow-sm">
+              <Calendar className="w-3.5 h-3.5 text-blue-600" />
+              <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)}
+                className="text-sm text-slate-700 focus:outline-none" />
+              <span className="text-slate-400">–</span>
+              <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)}
+                className="text-sm text-slate-700 focus:outline-none" />
+            </div>
+            <button onClick={load} className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
+              Aplicar
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Stats */}

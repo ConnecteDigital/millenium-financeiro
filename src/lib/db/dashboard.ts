@@ -1,10 +1,10 @@
 import { createClient } from '@/lib/supabase/client'
-import { startOfWeek, endOfWeek, format } from 'date-fns'
+import { format } from 'date-fns'
 
-export async function getDashboardStats(weekDate: Date) {
+export async function getDashboardStatsRange(startDate: string, endDate: string) {
   const supabase = createClient()
-  const weekStart = format(startOfWeek(weekDate, { weekStartsOn: 1 }), 'yyyy-MM-dd')
-  const weekEnd = format(endOfWeek(weekDate, { weekStartsOn: 1 }), 'yyyy-MM-dd')
+  const weekStart = startDate
+  const weekEnd = endDate
 
   const [callsRes, ordersRes, expensesRes] = await Promise.all([
     supabase
