@@ -8,6 +8,64 @@ import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, format } from 'date-f
 
 const fmt = (v: number) => `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
 
+async function exportPDF(data: any, startDate: string, endDate: string) {
+  const { jsPDF } = await import('jspdf')
+  const doc = new jsPDF()
+  const s = data?.summary
+
+  // Header
+  doc.setFontSize(20)
+  doc.setTextColor(37, 99, 235)
+  doc.text('Millenium Financeiro', 14, 20)
+  doc.setFontSize(11)
+  doc.setTextColor(100, 116, 139)
+  doc.text(`Relatório: ${new Date(startDate + 'T12:00:00').toLocaleDateString('pt-BR')} a ${new Date(endDate + 'T12:00:00').toLocaleDateString('pt-BR')}`, 14, 28)
+  doc.setDrawColor(226, 232, 240)
+  doc.line(14, 32, 196, 32)
+
+  // Resumo
+  doc.setFontSize(13)
+  doc.setTextColor(30, 41, 59)
+  doc.text('Resumo do Período', 14, 42)
+  doc.setFontSize(10)
+  doc.setTextColor(71, 85, 105)
+  doc.text(`Total de Chamados: ${s?.totalCalls ?? 0}`, 14, 52)
+  doc.text(`Aprovados: ${s?.approvedCalls ?? 0}`, 14, 59)
+  doc.text(`Receita Bruta: ${fmt(s?.grossRevenue ?? 0)}`, 14, 66)
+  doc.text(`Receita Líquida: ${fmt(s?.netRevenue ?? 0)}`, 14, 73)
+
+  // Por cidade
+  if (data?.byCity?.length) {
+    doc.setFontSize(13)
+    doc.setTextColor(30, 41, 59)
+    doc.text('Ranking por Cidade', 14, 88)
+    doc.setFontSize(10)
+    doc.setTextColor(71, 85, 105)
+    data.byCity.slice(0, 8).forEach((c: any, i: number) => {
+      doc.text(`${i + 1}. ${c.city} — ${c.calls} OS — ${fmt(c.revenue)}`, 14, 98 + i * 8)
+    })
+  }
+
+  // Por origem
+  if (data?.byOrigin?.length) {
+    const startY = data?.byCity?.length ? 98 + Math.min(data.byCity.length, 8) * 8 + 10 : 88
+    doc.setFontSize(13)
+    doc.setTextColor(30, 41, 59)
+    doc.text('Chamados por Origem', 14, startY)
+    doc.setFontSize(10)
+    doc.setTextColor(71, 85, 105)
+    data.byOrigin.forEach((o: any, i: number) => {
+      doc.text(`${o.name}: ${o.value} chamados`, 14, startY + 10 + i * 8)
+    })
+  }
+
+  doc.setFontSize(8)
+  doc.setTextColor(148, 163, 184)
+  doc.text(`Gerado em ${new Date().toLocaleString('pt-BR')} · Millenium Desentupidora`, 14, 285)
+
+  doc.save(`relatorio-millenium-${startDate}-${endDate}.pdf`)
+}
+
 export default function RelatoriosPage() {
   const [period, setPeriod] = useState<'semana' | 'mes'>('mes')
   const [startDate, setStartDate] = useState(format(startOfMonth(new Date()), 'yyyy-MM-dd'))
@@ -52,7 +110,10 @@ export default function RelatoriosPage() {
           <h1 className="text-2xl font-bold text-slate-800">Relatórios</h1>
           <p className="text-slate-500 text-sm mt-0.5">Análise completa do desempenho financeiro e operacional</p>
         </div>
-        <button className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition">
+        <button
+          onClick={() => data && exportPDF(data, startDate, endDate)}
+          disabled={!data || loading}
+          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition">
           <Download className="w-4 h-4" />
           Exportar PDF
         </button>

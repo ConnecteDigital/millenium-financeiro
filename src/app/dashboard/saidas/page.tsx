@@ -82,18 +82,18 @@ export default function SaidasPage() {
               onChange={e => setSearch(e.target.value)}
               className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-1 bg-slate-100 rounded-lg p-1">
             {(['todos', 'fixo', 'avulso'] as const).map(t => (
               <button key={t} onClick={() => setTypeFilter(t)}
-                className={`px-3 py-2 rounded-lg text-xs font-medium transition ${typeFilter === t ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${typeFilter === t ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
                 {t === 'todos' ? 'Todos' : t === 'fixo' ? 'Fixos' : 'Avulsos'}
               </button>
             ))}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-1 bg-slate-100 rounded-lg p-1">
             {(['todos', 'pago', 'pendente'] as const).map(s => (
               <button key={s} onClick={() => setStatusFilter(s)}
-                className={`px-3 py-2 rounded-lg text-xs font-medium transition ${statusFilter === s ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${statusFilter === s ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
                 {s === 'todos' ? 'Todos' : s === 'pago' ? 'Pago' : 'Pendente'}
               </button>
             ))}
