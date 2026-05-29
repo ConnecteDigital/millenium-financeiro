@@ -10,7 +10,12 @@ import DateRangePicker, { DateRange } from '@/components/DateRangePicker'
 
 const fmt = (v: number) => `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
 
-const SERVICE_CATEGORIES = ['Desentupimento', 'Limpa Fossa', 'Limpeza Caixa D\'água', 'Limpeza de Esgoto', 'Limpeza de Gordura', 'Instalação Hidráulica', 'Outros']
+const SERVICE_CATEGORIES = [
+  'Desentupimento de ralo, vaso, esgoto, cano, pia, rede',
+  'Limpeza de caixa de gordura',
+  'Limpa fossa',
+  'Outros',
+]
 
 async function exportPDF(data: any, range: DateRange) {
   const { jsPDF } = await import('jspdf')

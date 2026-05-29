@@ -15,8 +15,10 @@ export async function getCalls(filters?: { status?: string; origin?: string; sea
   if (error) throw error
 
   if (filters?.search) {
+    const s = filters.search.toLowerCase()
     return data.filter(c =>
-      c.client?.name?.toLowerCase().includes(filters.search!.toLowerCase())
+      c.client?.name?.toLowerCase().includes(s) ||
+      c.contact_name?.toLowerCase().includes(s)
     )
   }
   return data

@@ -120,19 +120,24 @@ export default function DashboardPage() {
               <p className="text-slate-400 text-sm px-4 py-6 text-center">Nenhum agendamento hoje</p>
             ) : // eslint-disable-next-line @typescript-eslint/no-explicit-any
             notifications.scheduled.map((n: any) => (
-              <div key={n.id} className="px-4 py-3 hover:bg-slate-50 transition">
-                <p className="text-sm font-medium text-slate-700">
-                  {n.contact_name || n.client?.name || 'Cliente não informado'}
-                </p>
-                {n.scheduled_time && (
-                  <p className="text-xs text-blue-600 font-semibold mt-0.5">
-                    🕐 {n.scheduled_time.slice(0, 5)}
-                  </p>
-                )}
-                {n.call_address && <p className="text-xs text-slate-400 mt-0.5">📍 {n.call_address}</p>}
-                {n.service_category && <p className="text-xs text-slate-500 mt-0.5">{n.service_category}</p>}
-                {n.notes && <p className="text-xs text-slate-400 mt-0.5">{n.notes}</p>}
-              </div>
+              <a key={n.id} href={`/dashboard/chamados/${n.id}/editar`}
+                className="block px-4 py-3 hover:bg-blue-50 transition group cursor-pointer border-b border-slate-50 last:border-0">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-700 group-hover:text-blue-700">
+                      {n.contact_name || n.client?.name || 'Cliente não informado'}
+                    </p>
+                    {n.scheduled_time && (
+                      <p className="text-xs text-blue-600 font-semibold mt-0.5">
+                        🕐 {String(n.scheduled_time).slice(0, 5)}
+                      </p>
+                    )}
+                    {n.call_address && <p className="text-xs text-slate-400 mt-0.5 truncate">📍 {n.call_address}</p>}
+                    {n.service_category && <p className="text-xs text-slate-500 mt-0.5">{n.service_category}</p>}
+                  </div>
+                  <span className="text-xs text-blue-500 group-hover:text-blue-700 font-medium whitespace-nowrap mt-0.5">Editar →</span>
+                </div>
+              </a>
             ))}
           </div>
         </div>

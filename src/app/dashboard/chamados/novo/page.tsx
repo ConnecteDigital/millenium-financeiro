@@ -15,8 +15,10 @@ type BillingSystem = 'metro_linear' | 'metro_cubico' | 'litros' | 'carga' | 'val
 interface Item { id: string; quantity: number; description: string; unit_price: number }
 
 const SERVICE_CATEGORIES = [
-  'Desentupimento', 'Limpa Fossa', 'Limpeza Caixa D\'água',
-  'Limpeza de Esgoto', 'Limpeza de Gordura', 'Instalação Hidráulica', 'Outros'
+  'Desentupimento de ralo, vaso, esgoto, cano, pia, rede',
+  'Limpeza de caixa de gordura',
+  'Limpa fossa',
+  'Outros',
 ]
 
 export default function NovoChamadoPage() {
@@ -200,16 +202,6 @@ export default function NovoChamadoPage() {
               </button>
             ))}
           </div>
-        </div>
-
-        {/* Tipo de serviço */}
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1.5">Tipo de Serviço</label>
-          <select value={serviceCategory} onChange={e => setServiceCategory(e.target.value)}
-            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option value="">— Selecionar tipo —</option>
-            {SERVICE_CATEGORIES.map(c => <option key={c}>{c}</option>)}
-          </select>
         </div>
 
         {/* Nome do contato */}

@@ -95,7 +95,7 @@ export default function ChamadoDetailPage({ params }: { params: Promise<{ id: st
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold text-slate-800">
-                {call.client?.name ?? call.notes ?? 'Chamado sem identificação'}
+                {call.client?.name ?? call.contact_name ?? 'Chamado sem identificação'}
               </h1>
               <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${cfg?.bg} ${cfg?.color}`}>
                 <StatusIcon className="w-3 h-3" />
@@ -122,6 +122,12 @@ export default function ChamadoDetailPage({ params }: { params: Promise<{ id: st
           Informações do Chamado
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+          {(call.contact_name || call.client?.name) && (
+            <div>
+              <p className="text-slate-400 text-xs uppercase tracking-wide font-medium">Contato</p>
+              <p className="text-slate-700 font-medium mt-0.5">{call.client?.name ?? call.contact_name}</p>
+            </div>
+          )}
           <div>
             <p className="text-slate-400 text-xs uppercase tracking-wide font-medium">Origem</p>
             <p className="text-slate-700 font-medium mt-0.5">{originLabel[call.origin]}</p>
@@ -130,6 +136,24 @@ export default function ChamadoDetailPage({ params }: { params: Promise<{ id: st
             <p className="text-slate-400 text-xs uppercase tracking-wide font-medium">Status</p>
             <p className="text-slate-700 font-medium mt-0.5">{cfg?.label}</p>
           </div>
+          {call.service_category && (
+            <div>
+              <p className="text-slate-400 text-xs uppercase tracking-wide font-medium">Tipo de Serviço</p>
+              <p className="text-slate-700 font-medium mt-0.5">{call.service_category}</p>
+            </div>
+          )}
+          {call.scheduled_time && (
+            <div>
+              <p className="text-slate-400 text-xs uppercase tracking-wide font-medium">Horário Agendado</p>
+              <p className="text-blue-600 font-semibold mt-0.5">🕐 {String(call.scheduled_time).slice(0,5)}</p>
+            </div>
+          )}
+          {call.call_address && (
+            <div className="col-span-2">
+              <p className="text-slate-400 text-xs uppercase tracking-wide font-medium">Endereço do Serviço</p>
+              <p className="text-slate-700 mt-0.5">📍 {call.call_address}</p>
+            </div>
+          )}
           {call.notes && (
             <div className="col-span-2 sm:col-span-3">
               <p className="text-slate-400 text-xs uppercase tracking-wide font-medium">Observações</p>

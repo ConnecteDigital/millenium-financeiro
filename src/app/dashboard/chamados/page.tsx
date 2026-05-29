@@ -123,9 +123,14 @@ export default function ChamadosPage() {
                       {new Date(c.date).toLocaleDateString('pt-BR')}
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-sm font-medium text-slate-800">
-                        {c.client?.name ?? <span className="text-slate-400 italic">Sem cliente</span>}
-                      </span>
+                      <div>
+                        <span className="text-sm font-medium text-slate-800">
+                          {c.client?.name ?? c.contact_name ?? <span className="text-slate-400 italic">Sem identificação</span>}
+                        </span>
+                        {c.service_category && (
+                          <p className="text-xs text-slate-400 mt-0.5">{c.service_category}</p>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <span className="text-xs text-slate-500">{originLabel[c.origin]}</span>

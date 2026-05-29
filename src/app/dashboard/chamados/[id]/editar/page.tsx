@@ -26,13 +26,25 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
   const [clients, setClients] = useState<any[]>([])
   const [teams, setTeams] = useState<any[]>([])
 
+  const SERVICE_CATEGORIES = [
+    'Desentupimento de ralo, vaso, esgoto, cano, pia, rede',
+    'Limpeza de caixa de gordura',
+    'Limpa fossa',
+    'Outros',
+  ]
+
   // Chamado
   const [callDate, setCallDate] = useState('')
   const [origin, setOrigin] = useState('site_millenium')
   const [callStatus, setCallStatus] = useState('agendado')
   const [callNotes, setCallNotes] = useState('')
   const [clientId, setClientId] = useState('')
+  const [contactName, setContactName] = useState('')
+  const [serviceCategory, setServiceCategory] = useState('')
+  const [scheduledTime, setScheduledTime] = useState('')
+  const [callAddress, setCallAddress] = useState('')
   const [isApproved, setIsApproved] = useState(false)
+  const [isScheduled, setIsScheduled] = useState(false)
   const [existingSoId, setExistingSoId] = useState<string | null>(null)
 
   // OS
@@ -73,7 +85,12 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
       setCallStatus(call.status)
       setCallNotes(call.notes ?? '')
       setClientId(call.client_id ?? '')
+      setContactName(call.contact_name ?? '')
+      setServiceCategory(call.service_category ?? '')
+      setScheduledTime(call.scheduled_time ? String(call.scheduled_time).slice(0,5) : '')
+      setCallAddress(call.call_address ?? '')
       setIsApproved(call.status === 'aprovado')
+      setIsScheduled(call.status === 'agendado')
 
       // Preencher OS se existir
       const so = call.service_orders?.[0]
@@ -128,6 +145,7 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
   function handleStatusChange(status: string) {
     setCallStatus(status)
     setIsApproved(status === 'aprovado')
+    setIsScheduled(status === 'agendado')
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -140,9 +158,13 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
       await updateCall(id, {
         date: callDate,
         client_id: clientId || null,
+        contact_name: contactName || null,
         origin,
         status: callStatus,
         notes: callNotes || null,
+        service_category: serviceCategory || null,
+        scheduled_time: scheduledTime || null,
+        call_address: callAddress || null,
       })
 
       // 2. Se aprovado, criar ou atualizar OS
@@ -280,13 +302,48 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1.5">Cliente</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">Nome do Contato</label>
+          <input type="text" value={contactName} onChange={e => setContactName(e.target.value)}
+            placeholder="Quem ligou"
+            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">Tipo de Serviço</label>
+          <select value={serviceCategory} onChange={e => setServiceCategory(e.target.value)}
+            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">— Selecionar tipo —</option>
+            {SERVICE_CATEGORIES.map(c => <option key={c}>{c}</option>)}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">Cliente cadastrado <span className="text-slate-400 font-normal">(opcional)</span></label>
           <select value={clientId} onChange={e => setClientId(e.target.value)}
             className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option value="">— Selecionar cliente cadastrado (opcional) —</option>
+            <option value="">— Não vincular —</option>
             {clients.map(c => <option key={c.id} value={c.id}>{c.name}{c.city ? ` - ${c.city}` : ''}</option>)}
           </select>
         </div>
+
+        {isScheduled && (
+          <div className="border border-blue-100 bg-blue-50/50 rounded-lg p-4 space-y-3">
+            <p className="text-sm font-semibold text-blue-700">📅 Detalhes do Agendamento</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Horário Agendado</label>
+                <input type="time" value={scheduledTime} onChange={e => setScheduledTime(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Endereço do Serviço</label>
+                <input type="text" value={callAddress} onChange={e => setCallAddress(e.target.value)}
+                  placeholder="Rua, número, bairro, cidade"
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+              </div>
+            </div>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1.5">Observações</label>
