@@ -193,10 +193,10 @@ export default function NovoChamadoPage() {
           <label className="block text-sm font-medium text-slate-700 mb-2">Status *</label>
           <div className="flex flex-wrap gap-2">
             {[
-              { value: 'agendado', label: 'ðŸ"… Agendado' },
-              { value: 'aprovado', label: 'âœ… Aprovado' },
-              { value: 'nao_quis_visita', label: 'ðŸš« Não quis visita' },
-              { value: 'cancelado', label: 'âŒ Cancelado' },
+              { value: 'agendado', label: 'ðŸ"Agendado' },
+              { value: 'aprovado', label: 'Aprovado' },
+              { value: 'nao_quis_visita', label: 'Nao quis visita' },
+              { value: 'cancelado', label: 'Cancelado' },
             ].map(s => (
               <button key={s.value} type="button" onClick={() => setCallStatus(s.value)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition ${callStatus === s.value ? 'bg-orange-500 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
@@ -225,7 +225,7 @@ export default function NovoChamadoPage() {
           </label>
           <select value={clientId} onChange={e => setClientId(e.target.value)}
             className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400">
-            <option value="">â€" Não vincular â€"</option>
+            <option value="">â€"- Nao vincular -"</option>
             {clients.map(c => <option key={c.id} value={c.id}>{c.name}{c.city ? ` - ${c.city}` : ''}</option>)}
           </select>
         </div>
@@ -233,7 +233,7 @@ export default function NovoChamadoPage() {
         {/* Campos de agendamento */}
         {isScheduled && (
           <div className="border border-orange-100 bg-orange-50/50 rounded-lg p-4 space-y-3">
-            <p className="text-sm font-semibold text-orange-600">ðŸ"… Detalhes do Agendamento</p>
+            <p className="text-sm font-semibold text-orange-600">ðŸ"Detalhes do Agendamento</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Horário Agendado</label>
@@ -314,8 +314,8 @@ export default function NovoChamadoPage() {
             <div className="flex flex-wrap gap-2">
               {[
                 { value: 'proprio', label: 'âœ… Serviço Próprio' },
-                { value: 'terceirizado_saida', label: 'â†—ï¸ Terceirizado (passamos)' },
-                { value: 'terceirizado_entrada', label: 'â†™ï¸ Recebido de parceiro' },
+                { value: 'terceirizado_saida', label: 'Terceirizado (passamos)' },
+                { value: 'terceirizado_entrada', label: 'Recebido de parceiro' },
               ].map(s => (
                 <button key={s.value} type="button" onClick={() => setServiceType(s.value as ServiceType)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition ${serviceType === s.value ? 'bg-orange-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
@@ -449,9 +449,9 @@ export default function NovoChamadoPage() {
             <h2 className="font-semibold text-slate-800 text-base border-b border-slate-100 pb-3">Status de Pagamento</h2>
             <div className="flex gap-2 flex-wrap">
               {[
-                { value: 'pago', label: 'âœ… Pago' },
-                { value: 'pago_parcial', label: 'ðŸ• Pago parcialmente' },
-                { value: 'pendente', label: 'â³ Pendente' },
+                { value: 'pago', label: 'Pago' },
+                { value: 'pago_parcial', label: 'Pago parcialmente' },
+                { value: 'pendente', label: 'Pendente' },
               ].map(s => (
                 <button key={s.value} type="button" onClick={() => setPaymentStatus(s.value as PaymentStatus)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition ${paymentStatus === s.value ? 'bg-orange-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>

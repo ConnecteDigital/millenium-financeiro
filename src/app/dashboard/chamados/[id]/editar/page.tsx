@@ -285,10 +285,10 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
           <label className="block text-sm font-medium text-slate-700 mb-2">Status *</label>
           <div className="flex flex-wrap gap-2">
             {[
-              { value: 'agendado', label: '📅 Agendado' },
-              { value: 'aprovado', label: '✅ Aprovado' },
-              { value: 'nao_quis_visita', label: '🚫 Não quis visita' },
-              { value: 'cancelado', label: '❌ Cancelado' },
+              { value: 'agendado', label: 'Agendado' },
+              { value: 'aprovado', label: 'Aprovado' },
+              { value: 'nao_quis_visita', label: 'Nao quis visita' },
+              { value: 'cancelado', label: 'Cancelado' },
             ].map(s => (
               <button key={s.value} type="button" onClick={() => handleStatusChange(s.value)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition ${callStatus === s.value ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
@@ -312,7 +312,7 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
           <label className="block text-sm font-medium text-slate-700 mb-1.5">Tipo de Serviço</label>
           <select value={serviceCategory} onChange={e => setServiceCategory(e.target.value)}
             className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option value="">— Selecionar tipo —</option>
+            <option value="">Selecionar tipo —</option>
             {SERVICE_CATEGORIES.map(c => <option key={c}>{c}</option>)}
           </select>
         </div>
@@ -321,14 +321,14 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
           <label className="block text-sm font-medium text-slate-700 mb-1.5">Cliente cadastrado <span className="text-slate-400 font-normal">(opcional)</span></label>
           <select value={clientId} onChange={e => setClientId(e.target.value)}
             className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option value="">— Não vincular —</option>
+            <option value="">- Nao vincular -</option>
             {clients.map(c => <option key={c.id} value={c.id}>{c.name}{c.city ? ` - ${c.city}` : ''}</option>)}
           </select>
         </div>
 
         {isScheduled && (
           <div className="border border-blue-100 bg-blue-50/50 rounded-lg p-4 space-y-3">
-            <p className="text-sm font-semibold text-blue-700">📅 Detalhes do Agendamento</p>
+            <p className="text-sm font-semibold text-blue-700">Detalhes do Agendamento</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Horário Agendado</label>
@@ -403,8 +403,8 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
             <div className="flex flex-wrap gap-2">
               {[
                 { value: 'proprio', label: '✅ Serviço Próprio' },
-                { value: 'terceirizado_saida', label: '↗️ Terceirizado (passamos para parceiro)' },
-                { value: 'terceirizado_entrada', label: '↙️ Recebido de parceiro' },
+                { value: 'terceirizado_saida', label: 'Terceirizado (passamos para parceiro)' },
+                { value: 'terceirizado_entrada', label: 'Recebido de parceiro' },
               ].map(s => (
                 <button key={s.value} type="button" onClick={() => setServiceType(s.value as ServiceType)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition ${serviceType === s.value ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
@@ -551,9 +551,9 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
             <h2 className="font-semibold text-slate-800 text-base border-b border-slate-100 pb-3">Status de Pagamento</h2>
             <div className="flex gap-2 flex-wrap">
               {[
-                { value: 'pago', label: '✅ Pago' },
-                { value: 'pago_parcial', label: '🕐 Pago parcialmente' },
-                { value: 'pendente', label: '⏳ Pendente' },
+                { value: 'pago', label: 'Pago' },
+                { value: 'pago_parcial', label: 'Pago parcialmente' },
+                { value: 'pendente', label: 'Pendente' },
               ].map(s => (
                 <button key={s.value} type="button" onClick={() => setPaymentStatus(s.value as PaymentStatus)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition ${paymentStatus === s.value ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
