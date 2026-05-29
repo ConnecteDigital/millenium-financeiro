@@ -23,3 +23,10 @@ body {
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Fix mobile scroll snap */
+html, body { height: 100%; overflow: hidden; }
+#__next { height: 100%; }
+
+/* Smooth scroll everywhere */
+* { -webkit-overflow-scrolling: touch; }

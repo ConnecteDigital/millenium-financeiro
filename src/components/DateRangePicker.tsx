@@ -105,7 +105,8 @@ export default function DateRangePicker({ value, onChange }: Props) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-slate-200 rounded-xl shadow-xl w-72 overflow-hidden">
+        <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden"
+          style={{ width: 'min(288px, calc(100vw - 2rem))', maxHeight: '85vh', overflowY: 'auto' }}>
           {/* Presets */}
           <div className="p-2 border-b border-slate-100">
             {presets.map(p => {

@@ -154,36 +154,34 @@ export default function RelatoriosPage() {
         </div>
       </div>
 
-      {/* Filtros */}
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4">
-        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Origem</p>
-            <div className="flex gap-1 bg-slate-100 rounded-lg p-1 flex-wrap">
-              {[
-                { v: 'todos', l: 'Todos' },
-                { v: 'site_millenium', l: 'Site Millenium' },
-                { v: 'site_praja', l: 'Site Pra Já' },
-                { v: 'indicacao', l: 'Indicação' },
-                { v: 'terceirizado', l: 'Terceirizado' },
-              ].map(o => (
-                <button key={o.v} onClick={() => setOriginFilter(o.v)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${originFilter === o.v ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
-                  {o.l}
-                </button>
-              ))}
-            </div>
+      {/* Filtros - compacto no mobile */}
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-3 space-y-3">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Origem</p>
+          <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+            {[
+              { v: 'todos', l: 'Todos' },
+              { v: 'site_millenium', l: 'Millenium' },
+              { v: 'site_praja', l: 'Pra Ja' },
+              { v: 'indicacao', l: 'Indicacao' },
+              { v: 'terceirizado', l: 'Terceirizado' },
+            ].map(o => (
+              <button key={o.v} onClick={() => setOriginFilter(o.v)}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition ${originFilter === o.v ? 'bg-orange-500 text-white border-orange-500' : 'text-slate-500 border-slate-200 hover:border-orange-300'}`}>
+                {o.l}
+              </button>
+            ))}
           </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Tipo de Serviço</p>
-            <div className="flex gap-1 bg-slate-100 rounded-lg p-1 flex-wrap">
-              {['todos', ...SERVICE_CATEGORIES].map(c => (
-                <button key={c} onClick={() => setCategoryFilter(c)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${categoryFilter === c ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
-                  {c === 'todos' ? 'Todos' : c}
-                </button>
-              ))}
-            </div>
+        </div>
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Tipo de Servico</p>
+          <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+            {['todos', ...SERVICE_CATEGORIES].map(c => (
+              <button key={c} onClick={() => setCategoryFilter(c)}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition ${categoryFilter === c ? 'bg-orange-500 text-white border-orange-500' : 'text-slate-500 border-slate-200 hover:border-orange-300'}`}>
+                {c === 'todos' ? 'Todos' : c.length > 20 ? c.slice(0,18)+'...' : c}
+              </button>
+            ))}
           </div>
         </div>
       </div>

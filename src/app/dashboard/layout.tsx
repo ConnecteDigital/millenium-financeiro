@@ -7,7 +7,7 @@ import {
   LayoutDashboard, PhoneCall, Users, TrendingDown,
   BarChart3, Settings, LogOut, Menu, X
 } from 'lucide-react'
-import { ConnectDigitalLogo } from '@/components/logos'
+import { ConnectDigitalLogo, MilleniumLogo } from '@/components/logos'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -46,18 +46,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Logo area */}
-        <div className="px-4 py-5 border-b border-zinc-800">
+        <div className="px-4 py-4 border-b border-zinc-800">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-orange-500 flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-black text-base">M</span>
-            </div>
+            <MilleniumLogo size={40} className="rounded-xl flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-white font-bold text-sm leading-none">Millenium</p>
-              <p className="text-zinc-500 text-xs mt-0.5">Financeiro</p>
+              <p className="text-white font-bold text-sm leading-none">MILLENIUM</p>
+              <p className="text-orange-400 text-xs mt-0.5 font-medium">Financeiro</p>
             </div>
             <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-zinc-500 hover:text-white transition">
               <X className="w-4 h-4" />
             </button>
+          </div>
+          <div className="mt-3 flex items-center gap-1.5">
+            <div className="h-px flex-1 bg-zinc-800" />
+            <p className="text-zinc-600 text-xs">Connect Digital</p>
+            <div className="h-px flex-1 bg-zinc-800" />
           </div>
         </div>
 
@@ -99,15 +102,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile top bar */}
-        <header className="lg:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-zinc-100">
-          <button onClick={() => setSidebarOpen(true)} className="text-zinc-600 hover:text-zinc-900 transition">
+        <header className="lg:hidden flex items-center gap-3 px-4 py-3 bg-zinc-900 border-b border-zinc-800">
+          <button onClick={() => setSidebarOpen(true)} className="text-zinc-400 hover:text-white transition">
             <Menu className="w-5 h-5" />
           </button>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center">
-              <span className="text-white font-black text-xs">M</span>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <MilleniumLogo size={28} className="rounded-lg flex-shrink-0" />
+            <div className="min-w-0">
+              <p className="text-white font-bold text-sm leading-none">MILLENIUM</p>
+              <p className="text-orange-400 text-xs">Connect Digital</p>
             </div>
-            <span className="font-bold text-zinc-800 text-sm">Millenium Financeiro</span>
           </div>
         </header>
 
