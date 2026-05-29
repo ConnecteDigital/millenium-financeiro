@@ -1,7 +1,7 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { PhoneCall, CheckCircle, DollarSign, TrendingUp, TrendingDown, AlertCircle, Clock } from 'lucide-react'
+import { PhoneCall, CheckCircle, DollarSign, TrendingUp, TrendingDown, AlertCircle, Clock, ArrowRight } from 'lucide-react'
 import { format, startOfMonth, endOfMonth } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { getDashboardStatsRange, getNotifications } from '@/lib/db/dashboard'
@@ -98,20 +98,20 @@ export default function DashboardPage() {
           <StatCard icon={CheckCircle} label="Taxa de Aprovação"
             value={stats.total_calls > 0 ? `${Math.round((stats.approved_calls / stats.total_calls) * 100)}%` : '0%'}
             color="text-emerald-600" sub={`${stats.total_calls - stats.approved_calls} não aprovados`} />
-          <StatCard icon={DollarSign} label="Receita Bruta" value={fmt(stats.gross_revenue)} color="text-blue-600" />
-          <StatCard icon={TrendingUp} label="Receita Líquida" value={fmt(stats.net_revenue)} color="text-emerald-600" sub="após todos os custos" />
+          <StatCard icon={DollarSign} label="Receita Bruta" value={fmt(stats.gross_revenue)} color="text-orange-500" />
+          <StatCard icon={TrendingUp} label="Receita LÃ­quida" value={fmt(stats.net_revenue)} color="text-emerald-600" sub="após todos os custos" />
           <StatCard icon={AlertCircle} label="A Receber" value={fmt(stats.pending_receivables)} color="text-amber-600" sub="pagamentos em aberto" />
-          <StatCard icon={TrendingDown} label="Total de Saídas" value={fmt(stats.total_expenses)} color="text-red-500" />
+          <StatCard icon={TrendingDown} label="Total de SaÃ­das" value={fmt(stats.total_expenses)} color="text-red-500" />
         </div>
       ) : null}
 
       {/* Notifications */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-          <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 bg-blue-50">
-            <Clock className="w-4 h-4 text-blue-600" />
-            <h3 className="font-semibold text-sm text-blue-800">Agendados Hoje</h3>
-            <span className="ml-auto bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 bg-orange-50">
+            <Clock className="w-4 h-4 text-orange-500" />
+            <h3 className="font-semibold text-sm text-orange-800">Agendados Hoje</h3>
+            <span className="ml-auto bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
               {notifications?.scheduled?.length ?? 0}
             </span>
           </div>
@@ -121,21 +121,21 @@ export default function DashboardPage() {
             ) : // eslint-disable-next-line @typescript-eslint/no-explicit-any
             notifications.scheduled.map((n: any) => (
               <a key={n.id} href={`/dashboard/chamados/${n.id}/editar`}
-                className="block px-4 py-3 hover:bg-blue-50 transition group cursor-pointer border-b border-slate-50 last:border-0">
+                className="block px-4 py-3 hover:bg-orange-50 transition group cursor-pointer border-b border-slate-50 last:border-0">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-700 group-hover:text-blue-700">
+                    <p className="text-sm font-medium text-slate-700 group-hover:text-orange-600">
                       {n.contact_name || n.client?.name || 'Cliente não informado'}
                     </p>
                     {n.scheduled_time && (
-                      <p className="text-xs text-blue-600 font-semibold mt-0.5">
-                        🕐 {String(n.scheduled_time).slice(0, 5)}
+                      <p className="text-xs text-orange-500 font-semibold mt-0.5">
+                        {String(n.scheduled_time).slice(0, 5)}
                       </p>
                     )}
-                    {n.call_address && <p className="text-xs text-slate-400 mt-0.5 truncate">📍 {n.call_address}</p>}
+                    {n.call_address && <p className="text-xs text-slate-400 mt-0.5 truncate">{n.call_address}</p>}
                     {n.service_category && <p className="text-xs text-slate-500 mt-0.5">{n.service_category}</p>}
                   </div>
-                  <span className="text-xs text-blue-500 group-hover:text-blue-700 font-medium whitespace-nowrap mt-0.5">Editar →</span>
+                  <span className="text-xs text-orange-500 font-medium whitespace-nowrap mt-0.5">Editar</span>
                 </div>
               </a>
             ))}
@@ -159,7 +159,7 @@ export default function DashboardPage() {
                 <p className="text-sm font-medium text-slate-700">{n.client?.name ?? 'Cliente'}</p>
                 <p className="text-xs text-amber-600 mt-0.5">
                   Falta: {`R$ ${Number(n.remaining_amount || n.total_value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
-                  {n.remaining_due_date && ` · venc. ${new Date(n.remaining_due_date).toLocaleDateString('pt-BR')}`}
+                  {n.remaining_due_date && ` Â· venc. ${new Date(n.remaining_due_date).toLocaleDateString('pt-BR')}`}
                 </p>
               </div>
             ))}
@@ -182,7 +182,7 @@ export default function DashboardPage() {
               <div key={n.id} className="px-4 py-3 hover:bg-slate-50 transition">
                 <p className="text-sm font-medium text-slate-700">{n.description}</p>
                 <p className="text-xs text-red-500 mt-0.5">
-                  {`R$ ${Number(n.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`} · venc. {new Date(n.due_date).toLocaleDateString('pt-BR')}
+                  {`R$ ${Number(n.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`} Â· venc. {new Date(n.due_date).toLocaleDateString('pt-BR')}
                 </p>
               </div>
             ))}
@@ -194,7 +194,7 @@ export default function DashboardPage() {
       <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
         <h3 className="font-semibold text-slate-800 mb-4">Ações Rápidas</h3>
         <div className="flex flex-wrap gap-3">
-          <a href="/dashboard/chamados/novo" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
+          <a href="/dashboard/chamados/novo" className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
             <PhoneCall className="w-4 h-4" />
             Novo Chamado
           </a>
@@ -202,7 +202,7 @@ export default function DashboardPage() {
             Novo Cliente
           </a>
           <a href="/dashboard/saidas/novo" className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg transition">
-            Lançar Saída
+            Lançar SaÃ­da
           </a>
           <a href="/dashboard/relatorios" className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg transition">
             Ver Relatórios
@@ -212,3 +212,4 @@ export default function DashboardPage() {
     </div>
   )
 }
+

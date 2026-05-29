@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { Users, Plus, Trash2, Save, Settings, Loader2 } from 'lucide-react'
@@ -42,7 +42,7 @@ export default function ConfiguracoesPage() {
       {/* Equipes */}
       <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-4">
         <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-          <Users className="w-5 h-5 text-blue-600" />
+          <Users className="w-5 h-5 text-orange-500" />
           <h2 className="font-semibold text-slate-800">Equipes</h2>
         </div>
 
@@ -72,10 +72,10 @@ export default function ConfiguracoesPage() {
             onChange={e => setNewTeam(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleAddTeam()}
             placeholder="Nome da nova equipe..."
-            className="flex-1 px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
           />
           <button onClick={handleAddTeam} disabled={saving || !newTeam.trim()}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition">
+            className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:bg-blue-300 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
             Adicionar
           </button>
@@ -85,7 +85,7 @@ export default function ConfiguracoesPage() {
       {/* Dados da empresa */}
       <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-4">
         <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-          <Settings className="w-5 h-5 text-blue-600" />
+          <Settings className="w-5 h-5 text-orange-500" />
           <h2 className="font-semibold text-slate-800">Dados da Empresa</h2>
         </div>
 
@@ -93,22 +93,22 @@ export default function ConfiguracoesPage() {
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Nome da Empresa</label>
             <input type="text" defaultValue="Millenium Desentupidora"
-              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">CNPJ</label>
             <input type="text" defaultValue="50.773.617/0001-18"
-              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Telefone</label>
             <input type="text" defaultValue="(51) 99960-8260"
-              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
           </div>
         </div>
 
         <div className="flex justify-end">
-          <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition">
+          <button className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition">
             <Save className="w-4 h-4" />
             Salvar
           </button>
@@ -117,3 +117,4 @@ export default function ConfiguracoesPage() {
     </div>
   )
 }
+

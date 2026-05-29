@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { ArrowLeft, Plus, Trash2, Save, Loader2 } from 'lucide-react'
@@ -6,20 +6,14 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createCall } from '@/lib/db/calls'
 import { createServiceOrder } from '@/lib/db/service-orders'
-import { getClients } from '@/lib/db/clients'
+import { getClients, createClient_ } from '@/lib/db/clients'
 import { getTeams } from '@/lib/db/teams'
+import { getServiceTypes } from '@/lib/db/service-types'
 
 type ServiceType = 'proprio' | 'terceirizado_saida' | 'terceirizado_entrada'
 type PaymentStatus = 'pago' | 'pago_parcial' | 'pendente'
 type BillingSystem = 'metro_linear' | 'metro_cubico' | 'litros' | 'carga' | 'valor_fechado' | 'metro_quadrado'
 interface Item { id: string; quantity: number; description: string; unit_price: number }
-
-const SERVICE_CATEGORIES = [
-  'Desentupimento de ralo, vaso, esgoto, cano, pia, rede',
-  'Limpeza de caixa de gordura',
-  'Limpa fossa',
-  'Outros',
-]
 
 export default function NovoChamadoPage() {
   const router = useRouter()
@@ -27,6 +21,7 @@ export default function NovoChamadoPage() {
   const [error, setError] = useState('')
   const [clients, setClients] = useState<any[]>([])
   const [teams, setTeams] = useState<any[]>([])
+  const [serviceTypes, setServiceTypes] = useState<any[]>([])
 
   // Chamado básico
   const [callDate, setCallDate] = useState(new Date().toISOString().split('T')[0])
@@ -72,8 +67,8 @@ export default function NovoChamadoPage() {
   const [otherCost, setOtherCost] = useState(0)
 
   useEffect(() => {
-    Promise.all([getClients(), getTeams()])
-      .then(([c, t]) => { setClients(c); setTeams(t) })
+    Promise.all([getClients(), getTeams(), getServiceTypes()])
+      .then(([c, t, st]) => { setClients(c); setTeams(t); setServiceTypes(st) })
       .catch(console.error)
   }, [])
 
@@ -94,9 +89,16 @@ export default function NovoChamadoPage() {
     setSaving(true)
     setError('')
     try {
+      // Auto-criar cliente se não existe cadastrado
+      let finalClientId = clientId
+      if (!clientId && contactName.trim()) {
+        const newClient = await createClient_({ name: contactName.trim() })
+        finalClientId = newClient.id
+      }
+
       const call = await createCall({
         date: callDate,
-        client_id: clientId || null,
+        client_id: finalClientId || null,
         contact_name: contactName || null,
         origin,
         status: callStatus,
@@ -110,7 +112,7 @@ export default function NovoChamadoPage() {
         const orderData = {
           call_id: call.id,
           date: callDate,
-          client_id: clientId || null,
+          client_id: finalClientId || null,
           team_id: teamId || null,
           driver: driver || null,
           nf_number: nfNumber || null,
@@ -172,12 +174,12 @@ export default function NovoChamadoPage() {
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Data *</label>
             <input type="date" required value={callDate} onChange={e => setCallDate(e.target.value)}
-              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Origem *</label>
             <select value={origin} onChange={e => setOrigin(e.target.value)}
-              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400">
               <option value="site_millenium">Site Millenium</option>
               <option value="site_praja">Site Pra Já</option>
               <option value="indicacao">Indicação</option>
@@ -191,13 +193,13 @@ export default function NovoChamadoPage() {
           <label className="block text-sm font-medium text-slate-700 mb-2">Status *</label>
           <div className="flex flex-wrap gap-2">
             {[
-              { value: 'agendado', label: '📅 Agendado' },
-              { value: 'aprovado', label: '✅ Aprovado' },
-              { value: 'nao_quis_visita', label: '🚫 Não quis visita' },
-              { value: 'cancelado', label: '❌ Cancelado' },
+              { value: 'agendado', label: 'ðŸ"… Agendado' },
+              { value: 'aprovado', label: 'âœ… Aprovado' },
+              { value: 'nao_quis_visita', label: 'ðŸš« Não quis visita' },
+              { value: 'cancelado', label: 'âŒ Cancelado' },
             ].map(s => (
               <button key={s.value} type="button" onClick={() => setCallStatus(s.value)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${callStatus === s.value ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${callStatus === s.value ? 'bg-orange-500 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
                 {s.label}
               </button>
             ))}
@@ -212,45 +214,45 @@ export default function NovoChamadoPage() {
           </label>
           <input type="text" value={contactName} onChange={e => setContactName(e.target.value)}
             placeholder="Ex: João Silva"
-            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
         </div>
 
         {/* Cliente cadastrado */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1.5">
             Cliente cadastrado
-            <span className="text-slate-400 font-normal ml-1">(opcional — vincule se já existe no sistema)</span>
+            <span className="text-slate-400 font-normal ml-1">(opcional â€" vincule se já existe no sistema)</span>
           </label>
           <select value={clientId} onChange={e => setClientId(e.target.value)}
-            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option value="">— Não vincular —</option>
+            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400">
+            <option value="">â€" Não vincular â€"</option>
             {clients.map(c => <option key={c.id} value={c.id}>{c.name}{c.city ? ` - ${c.city}` : ''}</option>)}
           </select>
         </div>
 
         {/* Campos de agendamento */}
         {isScheduled && (
-          <div className="border border-blue-100 bg-blue-50/50 rounded-lg p-4 space-y-3">
-            <p className="text-sm font-semibold text-blue-700">📅 Detalhes do Agendamento</p>
+          <div className="border border-orange-100 bg-orange-50/50 rounded-lg p-4 space-y-3">
+            <p className="text-sm font-semibold text-orange-600">ðŸ"… Detalhes do Agendamento</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Horário Agendado</label>
                 <input type="time" value={scheduledTime} onChange={e => setScheduledTime(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Tipo de Serviço</label>
                 <select value={serviceCategory} onChange={e => setServiceCategory(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-                  <option value="">— Selecionar —</option>
-                  {SERVICE_CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white">
+                  <option value="">Selecionar tipo de servico</option>
+                  {serviceTypes.map(st => <option key={st.id} value={st.name}>{st.name}</option>)}
                 </select>
               </div>
               <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Endereço do Serviço</label>
                 <input type="text" value={callAddress} onChange={e => setCallAddress(e.target.value)}
                   placeholder="Rua, número, bairro, cidade"
-                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white" />
               </div>
             </div>
           </div>
@@ -260,11 +262,11 @@ export default function NovoChamadoPage() {
           <label className="block text-sm font-medium text-slate-700 mb-1.5">Observações</label>
           <textarea rows={2} value={callNotes} onChange={e => setCallNotes(e.target.value)}
             placeholder="Anotações sobre o chamado..."
-            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none" />
         </div>
       </div>
 
-      {/* OS — só quando aprovado */}
+      {/* OS â€" só quando aprovado */}
       {isApproved && (
         <>
           <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-4">
@@ -273,7 +275,7 @@ export default function NovoChamadoPage() {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Equipe</label>
                 <select value={teamId} onChange={e => setTeamId(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400">
                   <option value="">Selecione...</option>
                   {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                 </select>
@@ -281,27 +283,27 @@ export default function NovoChamadoPage() {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Motorista</label>
                 <input type="text" value={driver} onChange={e => setDriver(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Nº da NF</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">NÂº da NF</label>
                 <input type="text" value={nfNumber} onChange={e => setNfNumber(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Veículo</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">VeÃ­culo</label>
                 <input type="text" value={vehicle} onChange={e => setVehicle(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Vencimento</label>
                 <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Forma de Pagamento</label>
                 <input type="text" placeholder="Dinheiro, PIX, Cartão..." value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
               </div>
             </div>
           </div>
@@ -311,12 +313,12 @@ export default function NovoChamadoPage() {
             <h2 className="font-semibold text-slate-800 text-base border-b border-slate-100 pb-3">Tipo de Execução</h2>
             <div className="flex flex-wrap gap-2">
               {[
-                { value: 'proprio', label: '✅ Serviço Próprio' },
-                { value: 'terceirizado_saida', label: '↗️ Terceirizado (passamos)' },
-                { value: 'terceirizado_entrada', label: '↙️ Recebido de parceiro' },
+                { value: 'proprio', label: 'âœ… Serviço Próprio' },
+                { value: 'terceirizado_saida', label: 'â†—ï¸ Terceirizado (passamos)' },
+                { value: 'terceirizado_entrada', label: 'â†™ï¸ Recebido de parceiro' },
               ].map(s => (
                 <button key={s.value} type="button" onClick={() => setServiceType(s.value as ServiceType)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${serviceType === s.value ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${serviceType === s.value ? 'bg-orange-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
                   {s.label}
                 </button>
               ))}
@@ -332,7 +334,7 @@ export default function NovoChamadoPage() {
                   <div key={f.label}>
                     <label className="block text-sm font-medium text-slate-700 mb-1.5">{f.label}</label>
                     <input type="number" min="0" step="0.01" value={f.val} onChange={e => f.set(Number(e.target.value))}
-                      className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                      className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
                   </div>
                 ))}
               </div>
@@ -351,15 +353,15 @@ export default function NovoChamadoPage() {
                 <div key={item.id} className="grid grid-cols-12 gap-2 items-center">
                   <div className="col-span-2">
                     <input type="number" min="1" value={item.quantity} onChange={e => updateItem(item.id, 'quantity', Number(e.target.value))}
-                      className="w-full px-2 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                      className="w-full px-2 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
                   </div>
                   <div className="col-span-6">
                     <input type="text" value={item.description} placeholder="Descrição" onChange={e => updateItem(item.id, 'description', e.target.value)}
-                      className="w-full px-2 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                      className="w-full px-2 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
                   </div>
                   <div className="col-span-2">
                     <input type="number" min="0" step="0.01" value={item.unit_price} onChange={e => updateItem(item.id, 'unit_price', Number(e.target.value))}
-                      className="w-full px-2 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                      className="w-full px-2 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
                   </div>
                   <div className="col-span-1 text-sm text-slate-700 font-medium text-center">{(item.quantity * item.unit_price).toFixed(2)}</div>
                   <div className="col-span-1 flex justify-center">
@@ -367,7 +369,7 @@ export default function NovoChamadoPage() {
                   </div>
                 </div>
               ))}
-              <button type="button" onClick={addItem} className="flex items-center gap-1.5 text-blue-600 text-sm font-medium mt-2">
+              <button type="button" onClick={addItem} className="flex items-center gap-1.5 text-orange-500 text-sm font-medium mt-2">
                 <Plus className="w-4 h-4" /> Adicionar item
               </button>
             </div>
@@ -376,12 +378,12 @@ export default function NovoChamadoPage() {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Locação Equip. e M.O. (%)</label>
                 <input type="number" min="0" value={equipmentRentalPct} onChange={e => setEquipmentRentalPct(Number(e.target.value))}
-                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Valor (R$)</label>
                 <input type="number" min="0" step="0.01" value={equipmentRentalValue} onChange={e => setEquipmentRentalValue(Number(e.target.value))}
-                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
               </div>
             </div>
 
@@ -390,16 +392,16 @@ export default function NovoChamadoPage() {
               <div className="flex justify-between text-sm items-center">
                 <span className="text-slate-600">Descontos (R$)</span>
                 <input type="number" min="0" step="0.01" value={discount} onChange={e => setDiscount(Number(e.target.value))}
-                  className="w-24 px-2 py-1 border border-slate-200 rounded text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  className="w-24 px-2 py-1 border border-slate-200 rounded text-sm text-right focus:outline-none focus:ring-2 focus:ring-orange-400" />
               </div>
               <div className="flex justify-between text-sm items-center">
                 <span className="text-slate-600">Impostos (R$)</span>
                 <input type="number" min="0" step="0.01" value={taxes} onChange={e => setTaxes(Number(e.target.value))}
-                  className="w-24 px-2 py-1 border border-slate-200 rounded text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  className="w-24 px-2 py-1 border border-slate-200 rounded text-sm text-right focus:outline-none focus:ring-2 focus:ring-orange-400" />
               </div>
               <div className="flex justify-between text-base font-bold border-t border-slate-100 pt-2">
                 <span className="text-slate-800">Valor Total</span>
-                <span className="text-blue-600">R$ {total.toFixed(2)}</span>
+                <span className="text-orange-500">R$ {total.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -412,7 +414,7 @@ export default function NovoChamadoPage() {
                 const labels: Record<string,string> = { metro_linear:'Metro Linear', metro_cubico:'Metro Cúbico', litros:'Litros', carga:'Carga', valor_fechado:'Valor Fechado', metro_quadrado:'Metro Quadrado' }
                 return (
                   <button key={b} type="button" onClick={() => setBillingSystem(billingSystem === b ? '' : b)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${billingSystem === b ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-200 text-slate-600 hover:border-blue-300'}`}>
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${billingSystem === b ? 'bg-orange-500 border-orange-500 text-white' : 'border-slate-200 text-slate-600 hover:border-orange-300'}`}>
                     {labels[b]}
                   </button>
                 )
@@ -425,7 +427,7 @@ export default function NovoChamadoPage() {
                 { label: 'Com garantia de 30 dias', val: hasGuarantee, set: setHasGuarantee },
               ].map(({ label, val, set }) => (
                 <label key={label} className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={val} onChange={e => set(e.target.checked)} className="w-4 h-4 rounded text-blue-600" />
+                  <input type="checkbox" checked={val} onChange={e => set(e.target.checked)} className="w-4 h-4 rounded text-orange-500" />
                   <span className="text-sm text-slate-700">{label}</span>
                 </label>
               ))}
@@ -433,12 +435,12 @@ export default function NovoChamadoPage() {
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Condições de Pagamento</label>
               <input type="text" value={conditions} onChange={e => setConditions(e.target.value)}
-                className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Observações da OS</label>
               <textarea rows={2} value={observations} onChange={e => setObservations(e.target.value)}
-                className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+                className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none" />
             </div>
           </div>
 
@@ -447,12 +449,12 @@ export default function NovoChamadoPage() {
             <h2 className="font-semibold text-slate-800 text-base border-b border-slate-100 pb-3">Status de Pagamento</h2>
             <div className="flex gap-2 flex-wrap">
               {[
-                { value: 'pago', label: '✅ Pago' },
-                { value: 'pago_parcial', label: '🕐 Pago parcialmente' },
-                { value: 'pendente', label: '⏳ Pendente' },
+                { value: 'pago', label: 'âœ… Pago' },
+                { value: 'pago_parcial', label: 'ðŸ• Pago parcialmente' },
+                { value: 'pendente', label: 'â³ Pendente' },
               ].map(s => (
                 <button key={s.value} type="button" onClick={() => setPaymentStatus(s.value as PaymentStatus)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${paymentStatus === s.value ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${paymentStatus === s.value ? 'bg-orange-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
                   {s.label}
                 </button>
               ))}
@@ -462,17 +464,17 @@ export default function NovoChamadoPage() {
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">Valor Pago (R$)</label>
                   <input type="number" min="0" step="0.01" value={amountPaid} onChange={e => setAmountPaid(Number(e.target.value))}
-                    className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">Valor Restante (R$)</label>
                   <input type="number" min="0" step="0.01" value={remainingAmount} onChange={e => setRemainingAmount(Number(e.target.value))}
-                    className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">Data do Restante</label>
                   <input type="date" value={remainingDueDate} onChange={e => setRemainingDueDate(e.target.value)}
-                    className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
                 </div>
               </div>
             )}
@@ -488,7 +490,7 @@ export default function NovoChamadoPage() {
           Cancelar
         </Link>
         <button type="submit" disabled={saving}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-semibold px-6 py-2.5 rounded-lg transition">
+          className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white text-sm font-semibold px-6 py-2.5 rounded-lg transition">
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           {saving ? 'Salvando...' : 'Salvar Chamado'}
         </button>
@@ -496,3 +498,4 @@ export default function NovoChamadoPage() {
     </form>
   )
 }
+

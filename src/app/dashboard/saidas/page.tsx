@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 import { Plus, Search, CheckCircle, Clock, AlertCircle, TrendingDown, Repeat } from 'lucide-react'
@@ -43,13 +43,13 @@ export default function SaidasPage() {
     <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Saídas</h1>
+          <h1 className="text-2xl font-bold text-slate-800">SaÃ­das</h1>
           <p className="text-slate-500 text-sm mt-0.5">Controle de despesas fixas e variáveis</p>
         </div>
         <Link href="/dashboard/saidas/novo"
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition">
+          className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition">
           <Plus className="w-4 h-4" />
-          Lançar Saída
+          Lançar SaÃ­da
         </Link>
       </div>
 
@@ -80,7 +80,7 @@ export default function SaidasPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input type="text" placeholder="Buscar despesa..." value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
           </div>
           <div className="flex gap-1 bg-slate-100 rounded-lg p-1">
             {(['todos', 'fixo', 'avulso'] as const).map(t => (
@@ -124,7 +124,7 @@ export default function SaidasPage() {
                 ))
               ) : expenses.length === 0 ? (
                 <tr><td colSpan={7} className="px-4 py-12 text-center text-slate-400 text-sm">
-                  Nenhuma saída encontrada
+                  Nenhuma saÃ­da encontrada
                 </td></tr>
               ) : expenses.map(e => (
                 <tr key={e.id} className="hover:bg-slate-50 transition">
@@ -168,3 +168,4 @@ export default function SaidasPage() {
     </div>
   )
 }
+

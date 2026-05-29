@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 import { BarChart3, Download, TrendingUp, MapPin, Globe, Tag, Loader2, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react'
@@ -63,8 +63,8 @@ async function exportPDF(data: any, range: DateRange) {
   title('Resumo Financeiro', 13); y += 2
   row('Receita bruta:', fmt(s?.grossRevenue ?? 0), [37, 99, 235])
   row('Custos operacionais (terceirizados):', `- ${fmt(s?.outsourceCosts ?? 0)}`, [220, 38, 38])
-  row('Despesas do período:', `- ${fmt(s?.totalExpenses ?? 0)}`, [220, 38, 38])
-  row('Receita líquida:', fmt(s?.netRevenue ?? 0), [5, 150, 105])
+  row('Despesas do perÃ­odo:', `- ${fmt(s?.totalExpenses ?? 0)}`, [220, 38, 38])
+  row('Receita lÃ­quida:', fmt(s?.netRevenue ?? 0), [5, 150, 105])
   row('Recebido:', fmt(s?.paidRevenue ?? 0), [5, 150, 105])
   row('A receber:', fmt(s?.pendingRevenue ?? 0), [217, 119, 6])
   y += 2; line()
@@ -73,7 +73,7 @@ async function exportPDF(data: any, range: DateRange) {
   if (data?.byOrigin?.length) {
     title('Chamados por Origem', 13); y += 2
     data.byOrigin.forEach((o: any) => {
-      row(`${o.name}:`, `${o.calls} chamados · ${fmt(o.revenue)}`)
+      row(`${o.name}:`, `${o.calls} chamados Â· ${fmt(o.revenue)}`)
     })
     y += 2; line()
   }
@@ -82,7 +82,7 @@ async function exportPDF(data: any, range: DateRange) {
   if (data?.byCategory?.length) {
     title('Por Tipo de Serviço', 13); y += 2
     data.byCategory.forEach((c: any) => {
-      row(`${c.category}:`, `${c.calls} chamados · ${fmt(c.revenue)}`)
+      row(`${c.category}:`, `${c.calls} chamados Â· ${fmt(c.revenue)}`)
     })
     y += 2; line()
   }
@@ -92,12 +92,12 @@ async function exportPDF(data: any, range: DateRange) {
     if (y > 230) { doc.addPage(); y = 20 }
     title('Ranking por Cidade', 13); y += 2
     data.byCity.slice(0, 8).forEach((c: any, i: number) => {
-      row(`${i + 1}. ${c.city}:`, `${c.calls} OS · ${fmt(c.revenue)}`)
+      row(`${i + 1}. ${c.city}:`, `${c.calls} OS Â· ${fmt(c.revenue)}`)
     })
   }
 
   doc.setFontSize(8); doc.setTextColor(148, 163, 184); doc.setFont('helvetica', 'normal')
-  doc.text('Millenium Desentupidora · Sistema Millenium Financeiro', margin, 287)
+  doc.text('Millenium Desentupidora Â· Sistema Millenium Financeiro', margin, 287)
 
   doc.save(`relatorio-millenium-${format(new Date(), 'yyyy-MM-dd')}.pdf`)
 }
@@ -190,12 +190,12 @@ export default function RelatoriosPage() {
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+          <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
         </div>
       ) : isEmpty ? (
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-16 text-center">
           <BarChart3 className="w-12 h-12 text-slate-200 mx-auto mb-3" />
-          <p className="text-slate-500 font-medium">Nenhum dado para o período selecionado</p>
+          <p className="text-slate-500 font-medium">Nenhum dado para o perÃ­odo selecionado</p>
         </div>
       ) : (
         <>
@@ -204,7 +204,7 @@ export default function RelatoriosPage() {
             {[
               { label: 'Total', value: s?.totalCalls ?? 0, color: 'text-slate-700', icon: BarChart3 },
               { label: 'Aprovados', value: s?.approvedCalls ?? 0, color: 'text-emerald-600', icon: CheckCircle },
-              { label: 'Agendados', value: s?.scheduledCalls ?? 0, color: 'text-blue-600', icon: Clock },
+              { label: 'Agendados', value: s?.scheduledCalls ?? 0, color: 'text-orange-500', icon: Clock },
               { label: 'Não quis', value: s?.noVisitCalls ?? 0, color: 'text-slate-500', icon: XCircle },
               { label: 'Cancelados', value: s?.cancelledCalls ?? 0, color: 'text-red-500', icon: XCircle },
               { label: 'Aprovação', value: `${s?.totalCalls > 0 ? Math.round((s.approvedCalls / s.totalCalls) * 100) : 0}%`, color: 'text-emerald-600', icon: CheckCircle },
@@ -219,8 +219,8 @@ export default function RelatoriosPage() {
           {/* Cards financeiros */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: 'Receita Bruta', value: fmt(s?.grossRevenue ?? 0), color: 'text-blue-600' },
-              { label: 'Receita Líquida', value: fmt(s?.netRevenue ?? 0), color: 'text-emerald-600' },
+              { label: 'Receita Bruta', value: fmt(s?.grossRevenue ?? 0), color: 'text-orange-500' },
+              { label: 'Receita LÃ­quida', value: fmt(s?.netRevenue ?? 0), color: 'text-emerald-600' },
               { label: 'Recebido', value: fmt(s?.paidRevenue ?? 0), color: 'text-emerald-600' },
               { label: 'A Receber', value: fmt(s?.pendingRevenue ?? 0), color: 'text-amber-600' },
             ].map(c => (
@@ -235,7 +235,7 @@ export default function RelatoriosPage() {
           {data?.revenueByWeek?.length > 0 && (
             <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
               <div className="flex items-center gap-2 mb-6">
-                <TrendingUp className="w-5 h-5 text-blue-600" />
+                <TrendingUp className="w-5 h-5 text-orange-500" />
                 <h3 className="font-semibold text-slate-800">Receita por Semana</h3>
               </div>
               <ResponsiveContainer width="100%" height={250}>
@@ -245,7 +245,7 @@ export default function RelatoriosPage() {
                   <YAxis tick={{ fontSize: 12, fill: '#94a3b8' }} tickFormatter={v => `R$${(Number(v)/1000).toFixed(0)}k`} />
                   <Tooltip formatter={(v) => [`R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, '']} />
                   <Bar dataKey="bruto" name="Bruto" fill="#bfdbfe" radius={[4,4,0,0]} />
-                  <Bar dataKey="liquido" name="Líquido" fill="#2563eb" radius={[4,4,0,0]} />
+                  <Bar dataKey="liquido" name="LÃ­quido" fill="#2563eb" radius={[4,4,0,0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -347,3 +347,4 @@ export default function RelatoriosPage() {
     </div>
   )
 }
+

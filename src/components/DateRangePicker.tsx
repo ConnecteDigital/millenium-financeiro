@@ -97,9 +97,9 @@ export default function DateRangePicker({ value, onChange }: Props) {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2 shadow-sm hover:border-blue-300 transition text-sm font-medium text-slate-700"
+        className="flex items-center gap-2 bg-white border border-zinc-200 rounded-xl px-3 py-2 shadow-sm hover:border-orange-300 transition text-sm font-medium text-zinc-700"
       >
-        <Calendar className="w-4 h-4 text-blue-600 flex-shrink-0" />
+        <Calendar className="w-4 h-4 text-orange-500 flex-shrink-0" />
         <span>{value.label}</span>
         <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
@@ -114,7 +114,7 @@ export default function DateRangePicker({ value, onChange }: Props) {
               return (
                 <button key={p.label}
                   onClick={() => { onChange(range); setOpen(false) }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${active ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:bg-slate-50'}`}>
+                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${active ? 'bg-orange-50 text-orange-700 font-semibold' : 'text-slate-600 hover:bg-slate-50'}`}>
                   {p.label}
                 </button>
               )
@@ -137,7 +137,7 @@ export default function DateRangePicker({ value, onChange }: Props) {
               </div>
             </div>
             <button onClick={applyCustom}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 rounded-lg transition">
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium py-2 rounded-lg transition">
               Aplicar
             </button>
           </div>

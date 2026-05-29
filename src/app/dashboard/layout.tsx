@@ -4,16 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard,
-  PhoneCall,
-  Users,
-  TrendingDown,
-  BarChart3,
-  Settings,
-  LogOut,
-  Menu,
-  X,
-  ChevronRight
+  LayoutDashboard, PhoneCall, Users, TrendingDown,
+  BarChart3, Settings, LogOut, Menu, X
 } from 'lucide-react'
 
 const navItems = [
@@ -32,42 +24,49 @@ async function handleLogout() {
   window.location.href = '/'
 }
 
+function ConnectLogo({ size = 28 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none">
+      <circle cx="50" cy="50" r="50" fill="#f97316" />
+      <path d="M72 50c0 12.15-9.85 22-22 22s-22-9.85-22-22 9.85-22 22-22" stroke="white" strokeWidth="9" strokeLinecap="round" fill="none"/>
+      <path d="M58 28c0 0 8 4 10 14" stroke="white" strokeWidth="9" strokeLinecap="round" fill="none"/>
+    </svg>
+  )
+}
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
+    <div className="flex h-screen bg-zinc-50 overflow-hidden">
       {/* Mobile overlay */}
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-20 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/60 z-20 lg:hidden backdrop-blur-sm"
+          onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* Sidebar */}
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-30
-        flex flex-col w-64 bg-blue-950 text-white
-        transform transition-transform duration-200 ease-in-out
+        flex flex-col w-64 bg-zinc-900
+        transform transition-transform duration-300 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        {/* Logo */}
-        <div className="flex items-center gap-3 px-6 py-5 border-b border-blue-800/50">
-          <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-            <span className="text-lg font-black">M</span>
+        {/* Logo area */}
+        <div className="px-4 py-5 border-b border-zinc-800">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-orange-500 flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-black text-base">M</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-bold text-sm leading-none">Millenium</p>
+              <p className="text-zinc-500 text-xs mt-0.5">Financeiro</p>
+            </div>
+            <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-zinc-500 hover:text-white transition">
+              <X className="w-4 h-4" />
+            </button>
           </div>
-          <div>
-            <p className="font-bold text-sm leading-none">Millenium</p>
-            <p className="text-blue-300 text-xs mt-0.5">Financeiro</p>
-          </div>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="ml-auto lg:hidden text-blue-300 hover:text-white"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
 
         {/* Nav */}
@@ -75,32 +74,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {navItems.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href))
             return (
-              <Link
-                key={href}
-                href={href}
-                onClick={() => setSidebarOpen(false)}
-                className={`
-                  flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group
-                  ${active
-                    ? 'bg-blue-600 text-white'
-                    : 'text-blue-200 hover:bg-blue-800/50 hover:text-white'
-                  }
-                `}
-              >
+              <Link key={href} href={href} onClick={() => setSidebarOpen(false)}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  active
+                    ? 'bg-orange-500 text-white'
+                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
+                }`}>
                 <Icon className="w-4 h-4 flex-shrink-0" />
-                <span className="flex-1">{label}</span>
-                {active && <ChevronRight className="w-3 h-3 opacity-60" />}
+                <span>{label}</span>
               </Link>
             )
           })}
         </nav>
 
-        {/* Logout */}
-        <div className="px-3 py-4 border-t border-blue-800/50">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-blue-200 hover:bg-blue-800/50 hover:text-white transition w-full"
-          >
+        {/* Connect Digital branding */}
+        <div className="px-4 py-3 border-t border-zinc-800">
+          <div className="flex items-center gap-2 mb-3">
+            <ConnectLogo size={22} />
+            <div>
+              <p className="text-zinc-500 text-xs leading-none">Desenvolvido por</p>
+              <p className="text-zinc-300 text-xs font-semibold mt-0.5">Connect Digital</p>
+            </div>
+          </div>
+          <button onClick={handleLogout}
+            className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm font-medium text-zinc-500 hover:bg-zinc-800 hover:text-white transition">
             <LogOut className="w-4 h-4" />
             <span>Sair</span>
           </button>
@@ -109,17 +106,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top bar mobile */}
-        <header className="lg:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-slate-200">
-          <button onClick={() => setSidebarOpen(true)} className="text-slate-600">
+        {/* Mobile top bar */}
+        <header className="lg:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-zinc-100">
+          <button onClick={() => setSidebarOpen(true)} className="text-zinc-600 hover:text-zinc-900 transition">
             <Menu className="w-5 h-5" />
           </button>
-          <span className="font-semibold text-slate-800">Millenium Financeiro</span>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center">
+              <span className="text-white font-black text-xs">M</span>
+            </div>
+            <span className="font-bold text-zinc-800 text-sm">Millenium Financeiro</span>
+          </div>
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-6">
-          {children}
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-4 lg:p-6 max-w-7xl mx-auto">
+            {children}
+          </div>
         </main>
       </div>
     </div>
