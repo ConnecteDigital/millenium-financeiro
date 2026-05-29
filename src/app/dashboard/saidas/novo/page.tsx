@@ -51,7 +51,7 @@ export default function NovaSaidaPage() {
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Lançar SaÃ­da</h1>
+          <h1 className="text-2xl font-bold text-slate-800">Lançar SaÁ­da</h1>
           <p className="text-slate-500 text-sm">Registre uma nova despesa</p>
         </div>
       </div>
@@ -125,7 +125,7 @@ export default function NovaSaidaPage() {
           <button type="submit" disabled={loading}
             className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white text-sm font-semibold px-6 py-2.5 rounded-lg transition">
             <Save className="w-4 h-4" />
-            {loading ? 'Salvando...' : 'Salvar SaÃ­da'}
+            {loading ? 'Salvando...' : 'Salvar SaÁ­da'}
           </button>
         </div>
       </form>

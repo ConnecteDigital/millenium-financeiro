@@ -99,9 +99,9 @@ export default function DashboardPage() {
             value={stats.total_calls > 0 ? `${Math.round((stats.approved_calls / stats.total_calls) * 100)}%` : '0%'}
             color="text-emerald-600" sub={`${stats.total_calls - stats.approved_calls} não aprovados`} />
           <StatCard icon={DollarSign} label="Receita Bruta" value={fmt(stats.gross_revenue)} color="text-orange-500" />
-          <StatCard icon={TrendingUp} label="Receita LÃ­quida" value={fmt(stats.net_revenue)} color="text-emerald-600" sub="após todos os custos" />
+          <StatCard icon={TrendingUp} label="Receita LÁ­quida" value={fmt(stats.net_revenue)} color="text-emerald-600" sub="após todos os custos" />
           <StatCard icon={AlertCircle} label="A Receber" value={fmt(stats.pending_receivables)} color="text-amber-600" sub="pagamentos em aberto" />
-          <StatCard icon={TrendingDown} label="Total de SaÃ­das" value={fmt(stats.total_expenses)} color="text-red-500" />
+          <StatCard icon={TrendingDown} label="Total de SaÁ­das" value={fmt(stats.total_expenses)} color="text-red-500" />
         </div>
       ) : null}
 
@@ -202,7 +202,7 @@ export default function DashboardPage() {
             Novo Cliente
           </a>
           <a href="/dashboard/saidas/novo" className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg transition">
-            Lançar SaÃ­da
+            Lançar SaÁ­da
           </a>
           <a href="/dashboard/relatorios" className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg transition">
             Ver Relatórios

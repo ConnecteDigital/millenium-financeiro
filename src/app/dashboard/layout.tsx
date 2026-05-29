@@ -7,6 +7,7 @@ import {
   LayoutDashboard, PhoneCall, Users, TrendingDown,
   BarChart3, Settings, LogOut, Menu, X
 } from 'lucide-react'
+import { ConnectDigitalLogo } from '@/components/logos'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -24,15 +25,6 @@ async function handleLogout() {
   window.location.href = '/'
 }
 
-function ConnectLogo({ size = 28 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none">
-      <circle cx="50" cy="50" r="50" fill="#f97316" />
-      <path d="M72 50c0 12.15-9.85 22-22 22s-22-9.85-22-22 9.85-22 22-22" stroke="white" strokeWidth="9" strokeLinecap="round" fill="none"/>
-      <path d="M58 28c0 0 8 4 10 14" stroke="white" strokeWidth="9" strokeLinecap="round" fill="none"/>
-    </svg>
-  )
-}
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -90,7 +82,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Connect Digital branding */}
         <div className="px-4 py-3 border-t border-zinc-800">
           <div className="flex items-center gap-2 mb-3">
-            <ConnectLogo size={22} />
+            <ConnectDigitalLogo size={22} />
             <div>
               <p className="text-zinc-500 text-xs leading-none">Desenvolvido por</p>
               <p className="text-zinc-300 text-xs font-semibold mt-0.5">Connect Digital</p>

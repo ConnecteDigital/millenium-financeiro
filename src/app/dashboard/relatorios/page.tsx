@@ -63,8 +63,8 @@ async function exportPDF(data: any, range: DateRange) {
   title('Resumo Financeiro', 13); y += 2
   row('Receita bruta:', fmt(s?.grossRevenue ?? 0), [37, 99, 235])
   row('Custos operacionais (terceirizados):', `- ${fmt(s?.outsourceCosts ?? 0)}`, [220, 38, 38])
-  row('Despesas do perÃ­odo:', `- ${fmt(s?.totalExpenses ?? 0)}`, [220, 38, 38])
-  row('Receita lÃ­quida:', fmt(s?.netRevenue ?? 0), [5, 150, 105])
+  row('Despesas do perÁ­odo:', `- ${fmt(s?.totalExpenses ?? 0)}`, [220, 38, 38])
+  row('Receita lÁ­quida:', fmt(s?.netRevenue ?? 0), [5, 150, 105])
   row('Recebido:', fmt(s?.paidRevenue ?? 0), [5, 150, 105])
   row('A receber:', fmt(s?.pendingRevenue ?? 0), [217, 119, 6])
   y += 2; line()
@@ -195,7 +195,7 @@ export default function RelatoriosPage() {
       ) : isEmpty ? (
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-16 text-center">
           <BarChart3 className="w-12 h-12 text-slate-200 mx-auto mb-3" />
-          <p className="text-slate-500 font-medium">Nenhum dado para o perÃ­odo selecionado</p>
+          <p className="text-slate-500 font-medium">Nenhum dado para o perÁ­odo selecionado</p>
         </div>
       ) : (
         <>
@@ -220,7 +220,7 @@ export default function RelatoriosPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               { label: 'Receita Bruta', value: fmt(s?.grossRevenue ?? 0), color: 'text-orange-500' },
-              { label: 'Receita LÃ­quida', value: fmt(s?.netRevenue ?? 0), color: 'text-emerald-600' },
+              { label: 'Receita LÁ­quida', value: fmt(s?.netRevenue ?? 0), color: 'text-emerald-600' },
               { label: 'Recebido', value: fmt(s?.paidRevenue ?? 0), color: 'text-emerald-600' },
               { label: 'A Receber', value: fmt(s?.pendingRevenue ?? 0), color: 'text-amber-600' },
             ].map(c => (
@@ -245,7 +245,7 @@ export default function RelatoriosPage() {
                   <YAxis tick={{ fontSize: 12, fill: '#94a3b8' }} tickFormatter={v => `R$${(Number(v)/1000).toFixed(0)}k`} />
                   <Tooltip formatter={(v) => [`R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, '']} />
                   <Bar dataKey="bruto" name="Bruto" fill="#bfdbfe" radius={[4,4,0,0]} />
-                  <Bar dataKey="liquido" name="LÃ­quido" fill="#2563eb" radius={[4,4,0,0]} />
+                  <Bar dataKey="liquido" name="LÁ­quido" fill="#2563eb" radius={[4,4,0,0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

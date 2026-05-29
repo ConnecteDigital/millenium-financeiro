@@ -2,25 +2,7 @@
 
 import { useState } from 'react'
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react'
-
-function ConnectDigitalLogo({ size = 40 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="50" cy="50" r="50" fill="#f97316" />
-      <path d="M72 50c0 12.15-9.85 22-22 22s-22-9.85-22-22 9.85-22 22-22" stroke="white" strokeWidth="8" strokeLinecap="round" fill="none"/>
-      <path d="M58 28c0 0 8 4 10 14" stroke="white" strokeWidth="8" strokeLinecap="round" fill="none"/>
-    </svg>
-  )
-}
-
-function MilleniumLogo({ size = 40 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="100" height="100" rx="16" fill="#1d4ed8"/>
-      <text x="50" y="68" textAnchor="middle" fill="white" fontSize="58" fontWeight="900" fontFamily="system-ui">M</text>
-    </svg>
-  )
-}
+import { ConnectDigitalLogo, MilleniumLogo } from '@/components/logos'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -51,46 +33,45 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex bg-zinc-950">
-      {/* Left panel - branding */}
+      {/* Left panel - branding (desktop only) */}
       <div className="hidden lg:flex flex-col justify-between w-[45%] bg-zinc-900 p-12 relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-orange-500/10 blur-3xl" />
-          <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-orange-500/5 blur-3xl" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-orange-500/5 blur-2xl" />
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-orange-500/8 blur-3xl" />
+          <div className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-orange-500/5 blur-3xl" />
         </div>
 
-        <div className="relative">
-          <div className="flex items-center gap-3">
-            <ConnectDigitalLogo size={36} />
-            <div>
-              <p className="text-white font-bold text-sm leading-none">Connect Digital</p>
-              <p className="text-zinc-500 text-xs mt-0.5">A sua empresa na era digital</p>
-            </div>
+        {/* Connect Digital header */}
+        <div className="relative flex items-center gap-3">
+          <ConnectDigitalLogo size={38} />
+          <div>
+            <p className="text-white font-bold text-sm leading-none">Connect Digital</p>
+            <p className="text-zinc-500 text-xs mt-0.5">A sua empresa na era digital</p>
           </div>
         </div>
 
+        {/* Center content */}
         <div className="relative space-y-8">
           {/* Partnership card */}
-          <div className="bg-zinc-800/60 backdrop-blur rounded-2xl p-6 border border-zinc-700/50">
-            <div className="flex items-center gap-4 mb-4">
-              <MilleniumLogo size={48} />
+          <div className="bg-zinc-800/70 backdrop-blur rounded-2xl p-6 border border-zinc-700/40">
+            <div className="flex items-center gap-4 mb-5">
+              <MilleniumLogo size={60} />
               <div>
-                <p className="text-white font-bold text-lg leading-tight">Millenium</p>
-                <p className="text-orange-400 text-sm font-medium">Desentupidora</p>
+                <p className="text-white font-extrabold text-xl leading-tight">MILLENIUM</p>
+                <p className="text-orange-400 text-sm font-semibold mt-0.5">Desentupidora</p>
+                <p className="text-zinc-500 text-xs mt-1">Sistema Financeiro</p>
               </div>
             </div>
             <p className="text-zinc-400 text-sm leading-relaxed">
-              Sistema financeiro e administrativo desenvolvido pela Connect Digital para gestão completa dos seus chamados, clientes e finanças.
+              Sistema de gestão financeira e administrativa desenvolvido pela Connect Digital para controle completo de chamados, clientes e finanças.
             </p>
           </div>
 
           <div className="space-y-3">
             {[
-              'Gestão completa de chamados e OS',
+              'Gestao completa de chamados e OS',
               'Dashboard financeiro em tempo real',
-              'Relatórios e exportação em PDF',
-              'Controle de clientes e histórico',
+              'Relatorios e exportacao em PDF',
+              'Controle de clientes e historico',
             ].map(item => (
               <div key={item} className="flex items-center gap-3">
                 <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0">
@@ -102,21 +83,26 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="relative">
-          <p className="text-zinc-600 text-xs">
-            © {new Date().getFullYear()} Connect Digital · Todos os direitos reservados
-          </p>
-        </div>
+        <p className="relative text-zinc-600 text-xs">
+          {new Date().getFullYear()} Connect Digital — Todos os direitos reservados
+        </p>
       </div>
 
-      {/* Right panel - login form */}
+      {/* Right panel - login */}
       <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-12">
-        {/* Mobile logos */}
-        <div className="lg:hidden flex items-center gap-3 mb-10">
-          <ConnectDigitalLogo size={32} />
-          <div className="w-px h-8 bg-zinc-700" />
-          <MilleniumLogo size={32} />
-          <p className="text-white font-bold text-lg ml-1">Millenium</p>
+        {/* Mobile: show both logos */}
+        <div className="lg:hidden flex flex-col items-center gap-4 mb-10">
+          <ConnectDigitalLogo size={48} />
+          <p className="text-white font-bold text-lg">Connect Digital</p>
+          <div className="flex items-center gap-3">
+            <div className="h-px w-12 bg-zinc-700" />
+            <span className="text-zinc-600 text-xs">para</span>
+            <div className="h-px w-12 bg-zinc-700" />
+          </div>
+          <div className="flex items-center gap-3">
+            <MilleniumLogo size={44} />
+            <p className="text-white font-bold text-lg">MILLENIUM</p>
+          </div>
         </div>
 
         <div className="w-full max-w-sm">
@@ -130,14 +116,9 @@ export default function LoginPage() {
               <label className="block text-sm font-medium text-zinc-300 mb-2">Email</label>
               <div className="relative">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="seu@email.com"
-                  required
-                  className="w-full pl-10 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
-                />
+                <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                  placeholder="seu@email.com" required
+                  className="w-full pl-10 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition" />
               </div>
             </div>
 
@@ -145,14 +126,9 @@ export default function LoginPage() {
               <label className="block text-sm font-medium text-zinc-300 mb-2">Senha</label>
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  className="w-full pl-10 pr-10 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
-                />
+                <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
+                  placeholder="..." required
+                  className="w-full pl-10 pr-10 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition" />
                 <button type="button" onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition">
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -161,22 +137,17 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl px-4 py-3">
-                {error}
-              </div>
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl px-4 py-3">{error}</div>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-orange-500/50 text-white font-semibold py-3 rounded-xl transition text-sm mt-2"
-            >
+            <button type="submit" disabled={loading}
+              className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-orange-500/50 text-white font-semibold py-3 rounded-xl transition text-sm mt-2">
               {loading ? 'Entrando...' : 'Entrar no sistema'}
             </button>
           </form>
 
           <div className="mt-8 pt-6 border-t border-zinc-800 flex items-center justify-center gap-2">
-            <ConnectDigitalLogo size={20} />
+            <ConnectDigitalLogo size={18} />
             <p className="text-zinc-600 text-xs">Desenvolvido por Connect Digital</p>
           </div>
         </div>
