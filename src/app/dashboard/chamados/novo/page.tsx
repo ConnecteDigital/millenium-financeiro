@@ -291,7 +291,7 @@ export default function NovoChamadoPage() {
                   className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">VeÁ­culo</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Veículo</label>
                 <input type="text" value={vehicle} onChange={e => setVehicle(e.target.value)}
                   className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
               </div>

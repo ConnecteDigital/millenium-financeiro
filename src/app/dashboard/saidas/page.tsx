@@ -43,13 +43,13 @@ export default function SaidasPage() {
     <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">SaÁ­das</h1>
+          <h1 className="text-2xl font-bold text-slate-800">Saídas</h1>
           <p className="text-slate-500 text-sm mt-0.5">Controle de despesas fixas e variáveis</p>
         </div>
         <Link href="/dashboard/saidas/novo"
           className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition">
           <Plus className="w-4 h-4" />
-          Lançar SaÁ­da
+          Lançar Saída
         </Link>
       </div>
 
@@ -124,7 +124,7 @@ export default function SaidasPage() {
                 ))
               ) : expenses.length === 0 ? (
                 <tr><td colSpan={7} className="px-4 py-12 text-center text-slate-400 text-sm">
-                  Nenhuma saÁ­da encontrada
+                  Nenhuma saída encontrada
                 </td></tr>
               ) : expenses.map(e => (
                 <tr key={e.id} className="hover:bg-slate-50 transition">
