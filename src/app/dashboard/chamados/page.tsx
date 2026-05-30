@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Plus, Search, CheckCircle, XCircle, Clock, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { getCalls } from '@/lib/db/calls'
@@ -37,18 +37,26 @@ const filters: { value: Status; label: string }[] = [
 
 export default function ChamadosPage() {
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<Status>('todos')
   const [calls, setCalls] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => setDebouncedSearch(value), 350)
+  }
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const data = await getCalls({ status: statusFilter, search })
+      const data = await getCalls({ status: statusFilter, search: debouncedSearch })
       setCalls(data)
     } catch (e) { console.error(e) }
     finally { setLoading(false) }
-  }, [statusFilter, search])
+  }, [statusFilter, debouncedSearch])
 
   useEffect(() => { load() }, [load])
 
@@ -72,7 +80,7 @@ export default function ChamadosPage() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
         <input type="text" placeholder="Buscar cliente ou contato..."
-          value={search} onChange={e => setSearch(e.target.value)}
+          value={search} onChange={e => handleSearchChange(e.target.value)}
           className="w-full pl-9 pr-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 shadow-sm" />
       </div>
 

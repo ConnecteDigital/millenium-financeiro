@@ -13,7 +13,7 @@ import { createClient } from '@/lib/supabase/client'
 
 type ServiceType = 'proprio' | 'terceirizado_saida' | 'terceirizado_entrada'
 type PaymentStatus = 'pago' | 'pago_parcial' | 'pendente'
-type BillingSystem = 'metro_linear' | 'metro_cubico' | 'litros' | 'carga' | 'valor_fechado' | 'metro_quadrado'
+type BillingSystem = 'metro_linear' | 'metro_linear_sem_hidraulica' | 'metro_cubico' | 'litros' | 'carga' | 'valor_fechado' | 'metro_quadrado'
 
 interface Item { id: string; quantity: number; description: string; unit_price: number }
 
@@ -511,8 +511,8 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
             <div>
               <p className="text-sm font-medium text-slate-700 mb-2">Sistema de Cobrança</p>
               <div className="flex flex-wrap gap-2">
-                {(['metro_linear','metro_cubico','litros','carga','valor_fechado','metro_quadrado'] as BillingSystem[]).map(b => {
-                  const labels: Record<string,string> = { metro_linear:'Metro Linear', metro_cubico:'Metro Cúbico', litros:'Litros', carga:'Carga', valor_fechado:'Valor Fechado', metro_quadrado:'Metro Quadrado' }
+                {(['metro_linear','metro_linear_sem_hidraulica','metro_cubico','litros','carga','valor_fechado','metro_quadrado'] as BillingSystem[]).map(b => {
+                  const labels: Record<string,string> = { metro_linear:'Metro Linear', metro_linear_sem_hidraulica:'Metro Linear s/ Hidráulica', metro_cubico:'Metro Cúbico', litros:'Litros', carga:'Carga', valor_fechado:'Valor Fechado', metro_quadrado:'Metro Quadrado' }
                   return (
                     <button key={b} type="button" onClick={() => setBillingSystem(billingSystem === b ? '' : b)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${billingSystem === b ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-200 text-slate-600 hover:border-blue-300'}`}>

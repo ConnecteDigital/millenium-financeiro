@@ -410,8 +410,8 @@ export default function NovoChamadoPage() {
           <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-4">
             <h2 className="font-semibold text-slate-800 text-base border-b border-slate-100 pb-3">Levantamento e Cobrança</h2>
             <div className="flex flex-wrap gap-2">
-              {(['metro_linear','metro_cubico','litros','carga','valor_fechado','metro_quadrado'] as BillingSystem[]).map(b => {
-                const labels: Record<string,string> = { metro_linear:'Metro Linear', metro_cubico:'Metro Cúbico', litros:'Litros', carga:'Carga', valor_fechado:'Valor Fechado', metro_quadrado:'Metro Quadrado' }
+              {(['metro_linear','metro_linear_sem_hidraulica','metro_cubico','litros','carga','valor_fechado','metro_quadrado'] as BillingSystem[]).map(b => {
+                const labels: Record<string,string> = { metro_linear:'Metro Linear', metro_linear_sem_hidraulica:'Metro Linear s/ Hidráulica', metro_cubico:'Metro Cúbico', litros:'Litros', carga:'Carga', valor_fechado:'Valor Fechado', metro_quadrado:'Metro Quadrado' }
                 return (
                   <button key={b} type="button" onClick={() => setBillingSystem(billingSystem === b ? '' : b)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${billingSystem === b ? 'bg-orange-500 border-orange-500 text-white' : 'border-slate-200 text-slate-600 hover:border-orange-300'}`}>

@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { ArrowLeft, Phone, CheckCircle, XCircle, Clock, Edit, DollarSign, User, FileText, Wrench } from 'lucide-react'
+import { useEffect, useState, useRef } from 'react'
+import { ArrowLeft, Phone, CheckCircle, XCircle, Clock, Edit, DollarSign, User, FileText, Wrench, Paperclip, Upload, Trash2, Download } from 'lucide-react'
 import Link from 'next/link'
 import { use } from 'react'
 import { getCall } from '@/lib/db/calls'
@@ -42,10 +42,61 @@ export default function ChamadoDetailPage({ params }: { params: Promise<{ id: st
   const [call, setCall] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [updatingPayment, setUpdatingPayment] = useState(false)
+  const [attachments, setAttachments] = useState<any[]>([])
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     getCall(id).then(setCall).catch(console.error).finally(() => setLoading(false))
   }, [id])
+
+  useEffect(() => {
+    if (!id) return
+    loadAttachments()
+  }, [id])
+
+  async function loadAttachments() {
+    try {
+      const supabase = createClient()
+      const { data } = await supabase.storage.from('chamados-anexos').list(id, { sortBy: { column: 'created_at', order: 'desc' } })
+      setAttachments(data ?? [])
+    } catch { /* bucket pode não existir ainda */ }
+  }
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    try {
+      const supabase = createClient()
+      const path = `${id}/${Date.now()}_${file.name}`
+      const { error } = await supabase.storage.from('chamados-anexos').upload(path, file)
+      if (error) throw error
+      await loadAttachments()
+    } catch (err: any) {
+      alert('Erro ao fazer upload: ' + (err.message ?? 'Tente novamente'))
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  async function handleDeleteAttachment(name: string) {
+    if (!confirm(`Remover o arquivo "${name}"?`)) return
+    try {
+      const supabase = createClient()
+      await supabase.storage.from('chamados-anexos').remove([`${id}/${name}`])
+      await loadAttachments()
+    } catch (err: any) {
+      alert('Erro ao remover arquivo')
+    }
+  }
+
+  async function getDownloadUrl(name: string) {
+    const supabase = createClient()
+    const { data } = supabase.storage.from('chamados-anexos').getPublicUrl(`${id}/${name}`)
+    window.open(data.publicUrl, '_blank')
+  }
 
   async function updatePaymentStatus(soId: string, status: string) {
     setUpdatingPayment(true)
@@ -350,6 +401,61 @@ export default function ChamadoDetailPage({ params }: { params: Promise<{ id: st
           <p className="text-slate-400 text-xs mt-1">Altere o status para "Aprovado" para criar uma OS.</p>
         </div>
       )}
+
+      {/* Anexos */}
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-semibold text-slate-800 flex items-center gap-2">
+            <Paperclip className="w-4 h-4 text-blue-600" />
+            Documentos Anexados
+          </h2>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white text-xs font-semibold px-3 py-2 rounded-lg transition">
+            <Upload className="w-3.5 h-3.5" />
+            {uploading ? 'Enviando...' : 'Anexar arquivo'}
+          </button>
+          <input ref={fileInputRef} type="file" className="hidden" onChange={handleUpload}
+            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" />
+        </div>
+
+        {attachments.length === 0 ? (
+          <div className="border-2 border-dashed border-slate-200 rounded-lg p-8 text-center">
+            <Paperclip className="w-6 h-6 text-slate-300 mx-auto mb-2" />
+            <p className="text-slate-400 text-sm">Nenhum documento anexado</p>
+            <p className="text-slate-300 text-xs mt-1">Clique em "Anexar arquivo" para adicionar nota fiscal ou outros documentos</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {attachments.map((file: any) => {
+              const displayName = file.name.replace(/^\d+_/, '')
+              const sizeKb = file.metadata?.size ? Math.round(file.metadata.size / 1024) : null
+              return (
+                <div key={file.name} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <FileText className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-slate-700 truncate">{displayName}</p>
+                      {sizeKb && <p className="text-xs text-slate-400">{sizeKb} KB</p>}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button onClick={() => getDownloadUrl(file.name)}
+                      className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition" title="Baixar">
+                      <Download className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => handleDeleteAttachment(file.name)}
+                      className="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition" title="Remover">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
