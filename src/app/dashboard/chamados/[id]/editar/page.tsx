@@ -57,8 +57,12 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
   const [equipmentRentalPct, setEquipmentRentalPct] = useState(0)
   const [equipmentRentalValue, setEquipmentRentalValue] = useState(0)
   const [hasFloorPlan, setHasFloorPlan] = useState(false)
+  const [hasNoFloorPlan, setHasNoFloorPlan] = useState(false)
+  const [hasNoKnowledge, setHasNoKnowledge] = useState(false)
   const [hasHydraulicPlan, setHasHydraulicPlan] = useState(false)
+  const [hasNoHydraulicPlan, setHasNoHydraulicPlan] = useState(false)
   const [hasGuarantee, setHasGuarantee] = useState(false)
+  const [hasNoGuarantee, setHasNoGuarantee] = useState(false)
   const [teamId, setTeamId] = useState('')
   const [driver, setDriver] = useState('')
   const [nfNumber, setNfNumber] = useState('')
@@ -104,8 +108,12 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
         setEquipmentRentalPct(Number(so.equipment_rental_pct ?? 0))
         setEquipmentRentalValue(Number(so.equipment_rental_value ?? 0))
         setHasFloorPlan(so.has_floor_plan ?? false)
+        setHasNoFloorPlan(so.has_no_floor_plan ?? false)
+        setHasNoKnowledge(so.has_no_knowledge ?? false)
         setHasHydraulicPlan(so.has_hydraulic_plan ?? false)
+        setHasNoHydraulicPlan(so.has_no_hydraulic_plan ?? false)
         setHasGuarantee(so.has_guarantee ?? false)
+        setHasNoGuarantee(so.has_no_guarantee ?? false)
         setTeamId(so.team_id ?? '')
         setDriver(so.driver ?? '')
         setNfNumber(so.nf_number ?? '')
@@ -181,8 +189,12 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
           service_type: serviceType,
           billing_system: billingSystem || null,
           has_floor_plan: hasFloorPlan,
+          has_no_floor_plan: hasNoFloorPlan,
+          has_no_knowledge: hasNoKnowledge,
           has_hydraulic_plan: hasHydraulicPlan,
+          has_no_hydraulic_plan: hasNoHydraulicPlan,
           has_guarantee: hasGuarantee,
+          has_no_guarantee: hasNoGuarantee,
           equipment_rental_pct: equipmentRentalPct,
           equipment_rental_value: equipmentRentalValue,
           subtotal,
@@ -511,8 +523,8 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
             <div>
               <p className="text-sm font-medium text-slate-700 mb-2">Sistema de Cobrança</p>
               <div className="flex flex-wrap gap-2">
-                {(['metro_linear','metro_linear_sem_hidraulica','metro_cubico','litros','carga','valor_fechado','metro_quadrado'] as BillingSystem[]).map(b => {
-                  const labels: Record<string,string> = { metro_linear:'Metro Linear', metro_linear_sem_hidraulica:'Metro Linear s/ Hidráulica', metro_cubico:'Metro Cúbico', litros:'Litros', carga:'Carga', valor_fechado:'Valor Fechado', metro_quadrado:'Metro Quadrado' }
+                {(['metro_linear','metro_cubico','litros','carga','valor_fechado','metro_quadrado'] as BillingSystem[]).map(b => {
+                  const labels: Record<string,string> = { metro_linear:'Metro Linear', metro_cubico:'Metro Cúbico', litros:'Litros', carga:'Carga', valor_fechado:'Valor Fechado', metro_quadrado:'Metro Quadrado' }
                   return (
                     <button key={b} type="button" onClick={() => setBillingSystem(billingSystem === b ? '' : b)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${billingSystem === b ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-200 text-slate-600 hover:border-blue-300'}`}>
@@ -522,16 +534,33 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
                 })}
               </div>
             </div>
-            <div className="flex flex-wrap gap-4">
+            <div className="space-y-3">
               {[
-                { label: 'Com planta baixa', val: hasFloorPlan, set: setHasFloorPlan },
-                { label: 'Com planta hidráulica', val: hasHydraulicPlan, set: setHasHydraulicPlan },
-                { label: 'Com garantia de 30 dias', val: hasGuarantee, set: setHasGuarantee },
-              ].map(({ label, val, set }) => (
-                <label key={label} className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={val} onChange={e => set(e.target.checked)} className="w-4 h-4 rounded text-blue-600" />
-                  <span className="text-sm text-slate-700">{label}</span>
-                </label>
+                { title: 'Planta baixa', options: [
+                  { label: 'Com planta baixa', val: hasFloorPlan, set: setHasFloorPlan },
+                  { label: 'Sem planta baixa', val: hasNoFloorPlan, set: setHasNoFloorPlan },
+                  { label: 'Sem conhecimento', val: hasNoKnowledge, set: setHasNoKnowledge },
+                ]},
+                { title: 'Planta hidráulica', options: [
+                  { label: 'Com planta hidráulica', val: hasHydraulicPlan, set: setHasHydraulicPlan },
+                  { label: 'Sem planta hidráulica', val: hasNoHydraulicPlan, set: setHasNoHydraulicPlan },
+                ]},
+                { title: 'Garantia', options: [
+                  { label: 'Com garantia de 30 dias', val: hasGuarantee, set: setHasGuarantee },
+                  { label: 'Sem garantia', val: hasNoGuarantee, set: setHasNoGuarantee },
+                ]},
+              ].map(group => (
+                <div key={group.title}>
+                  <p className="text-xs text-slate-400 font-medium uppercase tracking-wide mb-1.5">{group.title}</p>
+                  <div className="flex flex-wrap gap-4">
+                    {group.options.map(({ label, val, set }) => (
+                      <label key={label} className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={val} onChange={e => set(e.target.checked)} className="w-4 h-4 rounded text-orange-500" />
+                        <span className="text-sm text-slate-700">{label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
             <div>

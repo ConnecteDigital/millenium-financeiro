@@ -6,7 +6,7 @@ export type PaymentStatus = 'pago' | 'pago_parcial' | 'pendente'
 export type ExpenseStatus = 'pago' | 'pendente'
 export type ExpenseType = 'fixo' | 'avulso'
 export type CallOrigin = 'site_millenium' | 'site_praja' | 'indicacao' | 'terceirizado'
-export type BillingSystem = 'metro_linear' | 'metro_linear_sem_hidraulica' | 'metro_cubico' | 'litros' | 'carga' | 'valor_fechado' | 'metro_quadrado'
+export type BillingSystem = 'metro_linear' | 'metro_cubico' | 'litros' | 'carga' | 'valor_fechado' | 'metro_quadrado'
 
 export interface Client {
   id: string

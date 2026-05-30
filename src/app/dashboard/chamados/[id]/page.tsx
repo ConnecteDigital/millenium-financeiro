@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { ArrowLeft, Phone, CheckCircle, XCircle, Clock, Edit, DollarSign, User, FileText, Wrench, Paperclip, Upload, Trash2, Download } from 'lucide-react'
+import { ArrowLeft, Phone, CheckCircle, XCircle, Clock, Edit, DollarSign, User, FileText, Wrench, Paperclip, Upload, Trash2, Download, Printer } from 'lucide-react'
 import Link from 'next/link'
 import { use } from 'react'
 import { getCall } from '@/lib/db/calls'
@@ -159,11 +159,20 @@ export default function ChamadoDetailPage({ params }: { params: Promise<{ id: st
             </p>
           </div>
         </div>
-        <Link href={`/dashboard/chamados/${id}/editar`}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition">
-          <Edit className="w-4 h-4" />
-          Editar Chamado
-        </Link>
+        <div className="flex items-center gap-2">
+          {so && (
+            <Link href={`/dashboard/chamados/${id}/imprimir`} target="_blank"
+              className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold px-4 py-2.5 rounded-lg transition">
+              <Printer className="w-4 h-4" />
+              Imprimir OS
+            </Link>
+          )}
+          <Link href={`/dashboard/chamados/${id}/editar`}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition">
+            <Edit className="w-4 h-4" />
+            Editar Chamado
+          </Link>
+        </div>
       </div>
 
       {/* Info do chamado */}
