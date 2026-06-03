@@ -56,7 +56,7 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
 
   // Chamado
   const [callDate, setCallDate] = useState('')
-  const [origin, setOrigin] = useState('site_lider')
+  const [origin, setOrigin] = useState('site_millenium')
   const [callStatus, setCallStatus] = useState('agendado')
   const [callNotes, setCallNotes] = useState('')
   const [clientId, setClientId] = useState('')
@@ -345,8 +345,8 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
           <label className="block text-sm font-medium text-slate-700 mb-2">Origem *</label>
           <div className="flex flex-wrap gap-2">
             {[
-              { value: 'site_lider', label: 'Site Líder' },
-              { value: 'site_poa', label: 'Site POA' },
+              { value: 'site_millenium', label: 'Site Millenium' },
+              { value: 'site_praja', label: 'Site Pra Já' },
               { value: 'indicacao', label: 'Indicação' },
               { value: 'terceirizado', label: 'Terceirizado' },
             ].map(s => (
