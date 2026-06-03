@@ -4,21 +4,22 @@ import { useEffect, useState, useRef } from 'react'
 import { ArrowLeft, Phone, CheckCircle, XCircle, Clock, Edit, DollarSign, User, FileText, Wrench, Paperclip, Upload, Trash2, Download, Printer } from 'lucide-react'
 import Link from 'next/link'
 import { use } from 'react'
-import { getCall } from '@/lib/db/calls'
-import { updateCall } from '@/lib/db/calls'
+import { useRouter } from 'next/navigation'
+import { getCall, updateCall, deleteCall } from '@/lib/db/calls'
 import { updateExpense } from '@/lib/db/expenses'
 import { createClient } from '@/lib/supabase/client'
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; icon: React.ElementType }> = {
-  agendado: { label: 'Agendado', color: 'text-blue-700', bg: 'bg-blue-100', icon: Clock },
-  aprovado: { label: 'Aprovado', color: 'text-emerald-700', bg: 'bg-emerald-100', icon: CheckCircle },
-  nao_quis_visita: { label: 'Não quis visita', color: 'text-slate-600', bg: 'bg-slate-100', icon: XCircle },
-  cancelado: { label: 'Cancelado', color: 'text-red-600', bg: 'bg-red-100', icon: XCircle },
+  agendado:        { label: 'Agendado',     color: 'text-blue-700',    bg: 'bg-blue-100',    icon: Clock },
+  aprovado:        { label: 'Aprovado',     color: 'text-emerald-700', bg: 'bg-emerald-100', icon: CheckCircle },
+  nao_quis_visita: { label: 'Não quis',    color: 'text-slate-600',   bg: 'bg-slate-100',   icon: XCircle },
+  nao_aprovou:     { label: 'Não aprovou', color: 'text-orange-700',  bg: 'bg-orange-100',  icon: XCircle },
+  cancelado:       { label: 'Cancelado',   color: 'text-red-600',     bg: 'bg-red-100',     icon: XCircle },
 }
 
 const originLabel: Record<string, string> = {
-  site_millenium: 'Site Millenium',
-  site_praja: 'Site Pra Já',
+  site_lider: 'Site Líder',
+  site_poa: 'Site POA',
   indicacao: 'Indicação',
   terceirizado: 'Terceirizado',
 }
@@ -39,9 +40,11 @@ const fmt = (v: number) => `R$ ${Number(v).toLocaleString('pt-BR', { minimumFrac
 
 export default function ChamadoDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
+  const router = useRouter()
   const [call, setCall] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [updatingPayment, setUpdatingPayment] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [attachments, setAttachments] = useState<any[]>([])
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -98,6 +101,18 @@ export default function ChamadoDetailPage({ params }: { params: Promise<{ id: st
     window.open(data.publicUrl, '_blank')
   }
 
+  async function handleDeleteCall() {
+    if (!confirm('Tem certeza que deseja excluir este chamado? Esta ação não pode ser desfeita.')) return
+    setDeleting(true)
+    try {
+      await deleteCall(id)
+      router.push('/dashboard/chamados')
+    } catch {
+      alert('Erro ao excluir chamado. Tente novamente.')
+      setDeleting(false)
+    }
+  }
+
   async function updatePaymentStatus(soId: string, status: string) {
     setUpdatingPayment(true)
     try {
@@ -135,43 +150,48 @@ export default function ChamadoDetailPage({ params }: { params: Promise<{ id: st
   const cfg = statusConfig[call.status]
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 pb-24 lg:pb-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link href="/dashboard/chamados" className="p-2 hover:bg-slate-100 rounded-lg transition text-slate-500">
+      <div className="flex flex-col gap-3">
+        <div className="flex items-start gap-3">
+          <Link href="/dashboard/chamados" className="p-2 hover:bg-slate-100 rounded-lg transition text-slate-500 flex-shrink-0 mt-1">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-slate-800">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl font-bold text-slate-800 truncate">
                 {call.client?.name ?? call.contact_name ?? 'Chamado sem identificação'}
               </h1>
-              <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${cfg?.bg} ${cfg?.color}`}>
+              <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold flex-shrink-0 ${cfg?.bg} ${cfg?.color}`}>
                 <StatusIcon className="w-3 h-3" />
                 {cfg?.label}
               </span>
             </div>
             <p className="text-slate-500 text-sm mt-0.5">
-              {new Date(call.date).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              {new Date(call.date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
               {' · '}{originLabel[call.origin]}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap pl-11">
           {so && (
-            <Link href={`/dashboard/chamados/${id}/imprimir`} target="_blank"
-              className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold px-4 py-2.5 rounded-lg transition">
+            <Link href={`/os/${id}`} target="_blank"
+              className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold px-3 py-2 rounded-lg transition">
               <Printer className="w-4 h-4" />
-              Imprimir OS
+              <span className="hidden sm:inline">Imprimir OS</span>
+              <span className="sm:hidden">OS</span>
             </Link>
           )}
           <Link href={`/dashboard/chamados/${id}/editar`}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition">
+            className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-3 py-2 rounded-lg transition">
             <Edit className="w-4 h-4" />
             Editar Chamado
           </Link>
+          <button onClick={handleDeleteCall} disabled={deleting}
+            className="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 text-sm font-semibold px-3 py-2 rounded-lg transition border border-red-200">
+            <Trash2 className="w-4 h-4" />
+            <span className="hidden sm:inline">{deleting ? 'Excluindo...' : 'Excluir'}</span>
+          </button>
         </div>
       </div>
 
