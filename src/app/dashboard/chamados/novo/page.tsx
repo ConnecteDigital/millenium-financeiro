@@ -234,7 +234,7 @@ export default function NovoChamadoPage() {
       endereco: callAddress || '—',
       servico: serviceCategory || selectedServiceTypes.map(id => SERVICE_TYPES_OPTIONS.find(t => t.id === id)?.label).filter(Boolean).join(', ') || '—',
     }
-    const text = `📋 OS ${callData.os} - Desentupidora Líder\n👤 Cliente: ${callData.nome}\n📅 Data: ${callData.data}\n🕐 Horário: ${callData.horario}\n📍 Endereço: ${callData.endereco}\n🔧 Serviço: ${callData.servico}`
+    const text = `📋 OS ${callData.os} - Millenium Desentupidora\n👤 Cliente: ${callData.nome}\n📅 Data: ${callData.data}\n🕐 Horário: ${callData.horario}\n📍 Endereço: ${callData.endereco}\n🔧 Serviço: ${callData.servico}`
 
     if (navigator.share) {
       await navigator.share({ title: `OS ${callData.os}`, text })
