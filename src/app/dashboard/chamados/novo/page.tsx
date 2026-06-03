@@ -15,7 +15,7 @@ import { p } from '@/lib/parse-decimal'
 type ServiceExecType = 'proprio' | 'terceirizado_saida' | 'terceirizado_entrada'
 type PaymentStatus = 'pago' | 'pago_parcial' | 'pendente'
 type BillingSystem = 'metro_linear' | 'metro_cubico' | 'litros' | 'carga' | 'valor_fechado' | 'metro_quadrado'
-interface Item { id: string; quantity: number; description: string; unit_price: number }
+interface Item { id: string; quantity: string; description: string; unit_price: string }
 
 const SERVICE_TYPES_OPTIONS = [
   { id: 'desentupidora_ralo', label: 'Desentupidora de Ralo' },
@@ -93,7 +93,7 @@ export default function NovoChamadoPage() {
   const [serviceExecType, setServiceExecType] = useState<ServiceExecType>('proprio')
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('pendente')
   const [billingSystems, setBillingSystems] = useState<BillingSystem[]>([])
-  const [items, setItems] = useState<Item[]>([{ id: '1', quantity: 1, description: '', unit_price: 0 }])
+  const [items, setItems] = useState<Item[]>([{ id: '1', quantity: '', description: '', unit_price: '' }])
   const [discount, setDiscount] = useState('')
   const [taxes, setTaxes] = useState('')
   const [equipmentRentalPct, setEquipmentRentalPct] = useState('')
@@ -161,12 +161,12 @@ export default function NovoChamadoPage() {
       const calc = serviceCalcs[typeId]
       if (!calc || p(calc.unitPrice) === 0) continue
       const typeName = SERVICE_TYPES_OPTIONS.find(t => t.id === typeId)?.label ?? typeId
-      const billingLabel = calc.billing ? BILLING_FOR_TYPE[typeId]?.find(b => b.value === calc.billing)?.label ?? calc.billing : ''
+      const billingLbl = calc.billing ? BILLING_FOR_TYPE[typeId]?.find(b => b.value === calc.billing)?.label ?? calc.billing : ''
       generated.push({
         id: typeId,
-        quantity: p(calc.quantity),
-        description: `${typeName}${billingLabel ? ` - ${billingLabel}` : ''}`,
-        unit_price: p(calc.unitPrice),
+        quantity: calc.quantity,
+        description: `${typeName}${billingLbl ? ` - ${billingLbl}` : ''}`,
+        unit_price: calc.unitPrice,
       })
     }
     // Include manual items that have description
@@ -175,10 +175,10 @@ export default function NovoChamadoPage() {
   }
 
   const allItems = isApproved ? buildItemsFromCalcs() : []
-  const subtotal = allItems.reduce((s, i) => s + i.quantity * i.unit_price, 0)
+  const subtotal = allItems.reduce((s, i) => s + p(i.quantity) * p(i.unit_price), 0)
   const total = subtotal - p(discount) + p(taxes)
 
-  const addItem = () => setItems(prev => [...prev, { id: Date.now().toString(), quantity: 1, description: '', unit_price: 0 }])
+  const addItem = () => setItems(prev => [...prev, { id: Date.now().toString(), quantity: '', description: '', unit_price: '' }])
   const removeItem = (id: string) => setItems(prev => prev.filter(i => i.id !== id))
   const updateItem = (id: string, field: keyof Item, value: string | number) =>
     setItems(prev => prev.map(i => i.id === id ? { ...i, [field]: value } : i))
@@ -234,7 +234,7 @@ export default function NovoChamadoPage() {
       endereco: callAddress || '—',
       servico: serviceCategory || selectedServiceTypes.map(id => SERVICE_TYPES_OPTIONS.find(t => t.id === id)?.label).filter(Boolean).join(', ') || '—',
     }
-    const text = `📋 OS ${callData.os} - Millenium Desentupidora\n👤 Cliente: ${callData.nome}\n📅 Data: ${callData.data}\n🕐 Horário: ${callData.horario}\n📍 Endereço: ${callData.endereco}\n🔧 Serviço: ${callData.servico}`
+    const text = `📋 OS ${callData.os} - MILLENIUM DESENTUPIDORA\n👤 Cliente: ${callData.nome}\n📅 Data: ${callData.data}\n🕐 Horário: ${callData.horario}\n📍 Endereço: ${callData.endereco}\n🔧 Serviço: ${callData.servico}`
 
     if (navigator.share) {
       await navigator.share({ title: `OS ${callData.os}`, text })
@@ -280,7 +280,7 @@ export default function NovoChamadoPage() {
       // Gerar OS para agendado também (OS de agendamento)
       if (isScheduled || isApproved) {
         const finalItems = isApproved
-          ? allItems.filter(i => i.description.trim()).map(i => ({ quantity: i.quantity, description: i.description, unit_price: i.unit_price }))
+          ? allItems.filter(i => i.description.trim()).map(i => ({ quantity: p(i.quantity), description: i.description, unit_price: p(i.unit_price) }))
           : []
 
         const orderData: Record<string, any> = {
@@ -649,7 +649,7 @@ export default function NovoChamadoPage() {
                           <input
                             type="text" inputMode="decimal"
                             value={serviceCalcs[st.id].quantity || ''}
-                            onChange={e => updateCalc(st.id, 'quantity', parseFloat(e.target.value.replace(',', '.')) || 0)}
+                            onChange={e => updateCalc(st.id, 'quantity', e.target.value)}
                             className="w-full px-2 py-1.5 border border-orange-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-400"
                           />
                         </div>
@@ -662,7 +662,7 @@ export default function NovoChamadoPage() {
                           <input
                             type="text" inputMode="decimal"
                             value={serviceCalcs[st.id].unitPrice || ''}
-                            onChange={e => updateCalc(st.id, 'unitPrice', parseFloat(e.target.value.replace(',', '.')) || 0)}
+                            onChange={e => updateCalc(st.id, 'unitPrice', e.target.value)}
                             className="w-full px-2 py-1.5 border border-orange-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-400"
                           />
                         </div>

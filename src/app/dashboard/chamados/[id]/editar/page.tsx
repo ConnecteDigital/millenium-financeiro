@@ -15,7 +15,7 @@ import { p } from '@/lib/parse-decimal'
 type ServiceExecType = 'proprio' | 'terceirizado_saida' | 'terceirizado_entrada'
 type PaymentStatus = 'pago' | 'pago_parcial' | 'pendente'
 type BillingSystem = 'metro_linear' | 'metro_cubico' | 'litros' | 'carga' | 'valor_fechado' | 'metro_quadrado'
-interface Item { id: string; quantity: number; description: string; unit_price: number }
+interface Item { id: string; quantity: string; description: string; unit_price: string }
 
 const SERVICE_TYPES_OPTIONS = [
   { id: 'desentupidora_ralo', label: 'Desentupidora de Ralo' },
@@ -54,7 +54,6 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
   const [teams, setTeams] = useState<any[]>([])
   const [existingSoId, setExistingSoId] = useState<string | null>(null)
 
-  // Chamado
   const [callDate, setCallDate] = useState('')
   const [origin, setOrigin] = useState('site_millenium')
   const [callStatus, setCallStatus] = useState('agendado')
@@ -68,15 +67,13 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
   const isApproved = callStatus === 'aprovado'
   const isScheduled = callStatus === 'agendado'
 
-  // Serviços selecionados (checklist)
   const [selectedServiceTypes, setSelectedServiceTypes] = useState<string[]>([])
   const [serviceCalcs, setServiceCalcs] = useState<Record<string, ServiceCalc>>({})
 
-  // OS
   const [serviceExecType, setServiceExecType] = useState<ServiceExecType>('proprio')
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('pendente')
   const [billingSystems, setBillingSystems] = useState<BillingSystem[]>([])
-  const [items, setItems] = useState<Item[]>([{ id: '1', quantity: 1, description: '', unit_price: 0 }])
+  const [items, setItems] = useState<Item[]>([{ id: '1', quantity: '', description: '', unit_price: '' }])
   const [discount, setDiscount] = useState('')
   const [taxes, setTaxes] = useState('')
   const [equipmentRentalPct, setEquipmentRentalPct] = useState('')
@@ -168,9 +165,9 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
         if (so.items?.length) {
           setItems(so.items.map((item: any) => ({
             id: item.id,
-            quantity: Number(item.quantity),
+            quantity: String(item.quantity ?? ''),
             description: item.description,
-            unit_price: Number(item.unit_price),
+            unit_price: String(item.unit_price ?? ''),
           })))
         }
       }
@@ -198,12 +195,12 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
       const calc = serviceCalcs[typeId]
       if (!calc || p(calc.unitPrice) === 0) continue
       const typeName = SERVICE_TYPES_OPTIONS.find(t => t.id === typeId)?.label ?? typeId
-      const billingLabel = calc.billing ? BILLING_FOR_TYPE[typeId]?.find(b => b.value === calc.billing)?.label ?? '' : ''
+      const billingLbl = calc.billing ? BILLING_FOR_TYPE[typeId]?.find(b => b.value === calc.billing)?.label ?? '' : ''
       generated.push({
         id: typeId,
-        quantity: p(calc.quantity),
-        description: `${typeName}${billingLabel ? ` - ${billingLabel}` : ''}`,
-        unit_price: p(calc.unitPrice),
+        quantity: calc.quantity,
+        description: `${typeName}${billingLbl ? ` - ${billingLbl}` : ''}`,
+        unit_price: calc.unitPrice,
       })
     }
     const manualItems = items.filter(i => i.description.trim() && !selectedServiceTypes.includes(i.id))
@@ -211,10 +208,10 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
   }
 
   const allItems = isApproved ? buildItemsFromCalcs() : []
-  const subtotal = allItems.reduce((s, i) => s + i.quantity * i.unit_price, 0)
+  const subtotal = allItems.reduce((s, i) => s + p(i.quantity) * p(i.unit_price), 0)
   const total = subtotal + p(equipmentRentalValue) - p(discount) + p(taxes)
 
-  const addItem = () => setItems(prev => [...prev, { id: Date.now().toString(), quantity: 1, description: '', unit_price: 0 }])
+  const addItem = () => setItems(prev => [...prev, { id: Date.now().toString(), quantity: '', description: '', unit_price: '' }])
   const removeItem = (itemId: string) => setItems(prev => prev.filter(i => i.id !== itemId))
   const updateItem = (itemId: string, field: keyof Item, value: string | number) =>
     setItems(prev => prev.map(i => i.id === itemId ? { ...i, [field]: value } : i))
@@ -244,9 +241,9 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
 
       if (isApproved) {
         const finalItems = allItems.filter(i => i.description.trim()).map(i => ({
-          quantity: i.quantity,
+          quantity: p(i.quantity),
           description: i.description,
-          unit_price: i.unit_price,
+          unit_price: p(i.unit_price),
         }))
 
         const orderData: Record<string, any> = {
@@ -336,11 +333,9 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
         </div>
       </div>
 
-      {/* Informações básicas */}
       <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-4">
         <h2 className="font-semibold text-slate-800 text-base border-b border-slate-100 pb-3">Informações do Chamado</h2>
 
-        {/* Origem */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">Origem *</label>
           <div className="flex flex-wrap gap-2">
@@ -358,7 +353,6 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
 
-        {/* Status */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">Status *</label>
           <div className="flex flex-wrap gap-2">
@@ -377,13 +371,11 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
 
-        {/* Data */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1.5">Data do Chamado *</label>
           <input type="date" required value={callDate} onChange={e => setCallDate(e.target.value)} className={iCls} />
         </div>
 
-        {/* Contato */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1.5">
             Nome do Contato * <span className="text-slate-400 font-normal">(quem ligou)</span>
@@ -392,7 +384,6 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
             placeholder="Ex: João Silva" className={iCls} />
         </div>
 
-        {/* Cliente */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1.5">
             Cliente cadastrado <span className="text-slate-400 font-normal">(opcional)</span>
@@ -403,7 +394,6 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
           </select>
         </div>
 
-        {/* Agendamento */}
         {isScheduled && (
           <div className="border border-orange-200 bg-orange-50/60 rounded-lg p-4 space-y-3">
             <p className="text-sm font-semibold text-orange-600">📅 Detalhes do Agendamento</p>
@@ -425,7 +415,6 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
           </div>
         )}
 
-        {/* Tipos de serviço — para agendado e aprovado */}
         {(isScheduled || isApproved) && (
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Tipo(s) de Serviço</label>
@@ -448,10 +437,8 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
         </div>
       </div>
 
-      {/* OS — só quando aprovado */}
       {isApproved && (
         <>
-          {/* Checklist detalhado de serviços */}
           <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-4">
             <h2 className="font-semibold text-slate-800 text-base border-b border-slate-100 pb-3 flex items-center gap-2">
               <CheckSquare className="w-4 h-4 text-orange-500" />
@@ -461,12 +448,8 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
               {SERVICE_TYPES_OPTIONS.map(st => (
                 <div key={st.id}>
                   <label className="flex items-start gap-3 cursor-pointer p-2 rounded-lg hover:bg-slate-50">
-                    <input
-                      type="checkbox"
-                      checked={selectedServiceTypes.includes(st.id)}
-                      onChange={() => toggleServiceType(st.id)}
-                      className="w-4 h-4 mt-0.5 text-orange-500 rounded border-orange-300"
-                    />
+                    <input type="checkbox" checked={selectedServiceTypes.includes(st.id)} onChange={() => toggleServiceType(st.id)}
+                      className="w-4 h-4 mt-0.5 text-orange-500 rounded border-orange-300" />
                     <span className="text-sm text-slate-700">{st.label}</span>
                   </label>
 
@@ -477,27 +460,23 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
                           <label className="block text-xs font-medium text-slate-600 mb-1">Cobrança</label>
                           <select value={serviceCalcs[st.id].billing} onChange={e => updateCalc(st.id, 'billing', e.target.value)}
                             className="w-full px-2 py-1.5 border border-orange-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-400">
-                            {BILLING_FOR_TYPE[st.id]?.map(b => (
-                              <option key={b.value} value={b.value}>{b.label}</option>
-                            ))}
+                            {BILLING_FOR_TYPE[st.id]?.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
                           </select>
                         </div>
                         <div>
                           <label className="block text-xs font-medium text-slate-600 mb-1">
                             {serviceCalcs[st.id].billing === 'litros' ? 'Qtd (L)' : serviceCalcs[st.id].billing?.includes('metro') ? 'Qtd (m)' : 'Quantidade'}
                           </label>
-                          <input type="text" inputMode="decimal"
-                            value={serviceCalcs[st.id].quantity || ''}
-                            onChange={e => updateCalc(st.id, 'quantity', parseFloat(e.target.value.replace(',', '.')) || 0)}
+                          <input type="text" inputMode="decimal" value={serviceCalcs[st.id].quantity || ''}
+                            onChange={e => updateCalc(st.id, 'quantity', e.target.value)}
                             className="w-full px-2 py-1.5 border border-orange-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-400" />
                         </div>
                         <div>
                           <label className="block text-xs font-medium text-slate-600 mb-1">
                             {serviceCalcs[st.id].billing === 'litros' ? 'Preço/L (R$)' : serviceCalcs[st.id].billing?.includes('metro') ? 'Preço/m (R$)' : 'Valor (R$)'}
                           </label>
-                          <input type="text" inputMode="decimal"
-                            value={serviceCalcs[st.id].unitPrice || ''}
-                            onChange={e => updateCalc(st.id, 'unitPrice', parseFloat(e.target.value.replace(',', '.')) || 0)}
+                          <input type="text" inputMode="decimal" value={serviceCalcs[st.id].unitPrice || ''}
+                            onChange={e => updateCalc(st.id, 'unitPrice', e.target.value)}
                             className="w-full px-2 py-1.5 border border-orange-300 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-400" />
                         </div>
                         <div>
@@ -513,7 +492,6 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
               ))}
             </div>
 
-            {/* Itens adicionais / manuais */}
             <div className="border-t border-slate-100 pt-4">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Itens Adicionais (opcional)</p>
               <div className="space-y-2">
@@ -521,7 +499,7 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
                   <div key={item.id} className="grid grid-cols-12 gap-2 items-center">
                     <div className="col-span-2">
                       <input type="text" inputMode="decimal" value={item.quantity || ''}
-                        onChange={e => updateItem(item.id, 'quantity', parseFloat(e.target.value.replace(',', '.')) || 0)}
+                        onChange={e => updateItem(item.id, 'quantity', e.target.value)}
                         className="w-full px-2 py-2 border border-orange-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-orange-400 bg-white" />
                     </div>
                     <div className="col-span-6">
@@ -531,10 +509,10 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
                     </div>
                     <div className="col-span-2">
                       <input type="text" inputMode="decimal" value={item.unit_price || ''}
-                        onChange={e => updateItem(item.id, 'unit_price', parseFloat(e.target.value.replace(',', '.')) || 0)}
+                        onChange={e => updateItem(item.id, 'unit_price', e.target.value)}
                         className="w-full px-2 py-2 border border-orange-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-orange-400 bg-white" />
                     </div>
-                    <div className="col-span-1 text-xs text-slate-600 font-medium text-center">{(item.quantity * item.unit_price).toFixed(2)}</div>
+                    <div className="col-span-1 text-xs text-slate-600 font-medium text-center">{(p(item.quantity) * p(item.unit_price)).toFixed(2)}</div>
                     <div className="col-span-1 flex justify-center">
                       <button type="button" onClick={() => removeItem(item.id)} className="text-red-400 hover:text-red-600">
                         <Trash2 className="w-3.5 h-3.5" />
@@ -548,7 +526,6 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
               </div>
             </div>
 
-            {/* Totais */}
             <div className="border-t border-slate-100 pt-4 space-y-2">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -577,7 +554,6 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
             </div>
           </div>
 
-          {/* OS Info */}
           <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-4">
             <h2 className="font-semibold text-slate-800 text-base border-b border-slate-100 pb-3">
               Ordem de Serviço {existingSoId && <span className="text-orange-500 font-mono text-sm ml-1">(editando OS existente)</span>}
@@ -625,7 +601,6 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
             </div>
           </div>
 
-          {/* Split de parceiro */}
           <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-4">
             <h2 className="font-semibold text-slate-800 text-base border-b border-slate-100 pb-3">Parceiro Terceirizado</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -654,7 +629,6 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
             )}
           </div>
 
-          {/* Tipo execução */}
           <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-4">
             <h2 className="font-semibold text-slate-800 text-base border-b border-slate-100 pb-3">Tipo de Execução</h2>
             <div className="flex flex-wrap gap-2">
@@ -707,7 +681,6 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
             )}
           </div>
 
-          {/* Levantamento */}
           <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-4">
             <h2 className="font-semibold text-slate-800 text-base border-b border-slate-100 pb-3">Levantamento e Cobrança</h2>
             <div className="flex flex-wrap gap-2">
@@ -762,7 +735,6 @@ export default function EditarChamadoPage({ params }: { params: Promise<{ id: st
             </div>
           </div>
 
-          {/* Pagamento */}
           <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-4">
             <h2 className="font-semibold text-slate-800 text-base border-b border-slate-100 pb-3">Status de Pagamento</h2>
             <div className="flex gap-2 flex-wrap">
