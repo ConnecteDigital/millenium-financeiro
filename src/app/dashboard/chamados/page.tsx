@@ -23,8 +23,8 @@ const paymentConfig: Record<string, { label: string; color: string }> = {
 }
 
 const originLabel: Record<string, string> = {
-  site_lider: 'Site Líder',
-  site_poa: 'Site POA',
+  site_millenium: 'Site Millenium',
+  site_praja: 'Site Pra Já',
   indicacao: 'Indicacao',
   terceirizado: 'Terceirizado',
 }

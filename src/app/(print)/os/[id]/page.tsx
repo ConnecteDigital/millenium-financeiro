@@ -19,10 +19,10 @@ const billingLabel: Record<string, string> = {
 }
 
 const originConfig: Record<string, { name: string; headerBg: string; headerText: string; accentBg: string }> = {
-  site_lider:    { name: 'DESENTUPIDORA LÍDER',  headerBg: '#f97316', headerText: '#ffffff', accentBg: '#ffedd5' },
-  site_poa:      { name: 'POA DESENTUPIDORA',    headerBg: '#1d4ed8', headerText: '#ffffff', accentBg: '#dbeafe' },
-  indicacao:     { name: 'DESENTUPIDORA LÍDER',  headerBg: '#059669', headerText: '#ffffff', accentBg: '#d1fae5' },
-  terceirizado:  { name: 'DESENTUPIDORA LÍDER',  headerBg: '#6b7280', headerText: '#ffffff', accentBg: '#f3f4f6' },
+  site_millenium: { name: 'MILLENIUM DESENTUPIDORA', headerBg: '#f97316', headerText: '#ffffff', accentBg: '#ffedd5' },
+  site_praja:     { name: 'PRA JÁ DESENTUPIDORA',   headerBg: '#1d4ed8', headerText: '#ffffff', accentBg: '#dbeafe' },
+  indicacao:      { name: 'MILLENIUM DESENTUPIDORA', headerBg: '#059669', headerText: '#ffffff', accentBg: '#d1fae5' },
+  terceirizado:   { name: 'MILLENIUM DESENTUPIDORA', headerBg: '#6b7280', headerText: '#ffffff', accentBg: '#f3f4f6' },
 }
 
 export default function OSPage({ params }: { params: Promise<{ id: string }> }) {
@@ -77,7 +77,7 @@ export default function OSPage({ params }: { params: Promise<{ id: string }> }) 
 
   const client = call.client
   const items = so.items ?? []
-  const cfg = originConfig[call.origin] ?? originConfig.site_lider
+  const cfg = originConfig[call.origin] ?? originConfig.site_millenium
   const phone = client?.phone ?? call.contact_phone ?? '—'
 
   const levantamento = [
